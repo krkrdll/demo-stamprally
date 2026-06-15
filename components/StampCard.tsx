@@ -23,6 +23,10 @@ export default function StampCard({ checkpoint, collected, collectedAt }: Props)
           alt={`${checkpoint.title}のQRコード`}
           className="w-16 h-16 mb-2 rounded border border-gray-100"
         />
+      ) : checkpoint.type === 'passcode' ? (
+        <div className="w-16 h-16 mb-2 rounded-full border-4 border-dashed border-purple-200 flex items-center justify-center text-purple-300 text-2xl">
+          🔑
+        </div>
       ) : (
         <div className="w-16 h-16 mb-2 rounded-full border-4 border-dashed border-gray-200 flex items-center justify-center text-gray-300 text-2xl">
           ○
@@ -34,7 +38,7 @@ export default function StampCard({ checkpoint, collected, collectedAt }: Props)
       </div>
 
       <div className="text-xs text-gray-400 mt-1">
-        {checkpoint.type === 'gps' ? '📡 GPS' : '📷 カメラ'}
+        {checkpoint.type === 'gps' ? '📡 GPS' : checkpoint.type === 'passcode' ? '🔑 合言葉' : '📷 カメラ'}
       </div>
 
       {collected && collectedAt && (

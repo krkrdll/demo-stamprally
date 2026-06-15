@@ -30,6 +30,11 @@ export async function createCheckpoint(formData: FormData) {
         lng: parseFloat(formData.get('lng') as string),
       },
     });
+  } else if (type === 'passcode') {
+    const passcode = (formData.get('passcode') as string).trim();
+    await prisma.checkpoint.create({
+      data: { id, type, title, description, passcode },
+    });
   } else {
     const customUrl = (formData.get('markerImageUrl') as string)?.trim();
     await prisma.checkpoint.create({
@@ -60,6 +65,8 @@ export async function updateCheckpoint(id: string, formData: FormData) {
   if (type === 'gps') {
     data.lat = parseFloat(formData.get('lat') as string);
     data.lng = parseFloat(formData.get('lng') as string);
+  } else if (type === 'passcode') {
+    data.passcode = (formData.get('passcode') as string).trim();
   } else {
     const customUrl = (formData.get('markerImageUrl') as string)?.trim();
     data.markerImageUrl = customUrl || `/api/qr/${id}`;

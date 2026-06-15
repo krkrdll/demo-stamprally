@@ -15,7 +15,15 @@ export type MarkerCheckpoint = {
   description?: string;
 };
 
-export type Checkpoint = GpsCheckpoint | MarkerCheckpoint;
+export type PasscodeCheckpoint = {
+  id: string;
+  type: 'passcode';
+  passcode: string;
+  title: string;
+  description?: string;
+};
+
+export type Checkpoint = GpsCheckpoint | MarkerCheckpoint | PasscodeCheckpoint;
 
 export type CollectedStamp = {
   checkpointId: string;

@@ -28,12 +28,13 @@ export default async function EditCheckpointPage({
       <CheckpointForm
         action={action}
         defaultValues={{
-          type: checkpoint.type as 'gps' | 'marker',
+          type: checkpoint.type as 'gps' | 'marker' | 'passcode',
           title: checkpoint.title,
           description: checkpoint.description,
           lat: checkpoint.lat,
           lng: checkpoint.lng,
           markerImageUrl: checkpoint.markerImageUrl,
+          passcode: checkpoint.passcode,
         }}
         isEditing
       />

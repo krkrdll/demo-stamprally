@@ -7,6 +7,7 @@ type Row = {
   lat: number | null;
   lng: number | null;
   markerImageUrl: string | null;
+  passcode: string | null;
   title: string;
   description: string | null;
 };
@@ -18,6 +19,15 @@ function toCheckpoint(row: Row): Checkpoint {
       type: 'gps',
       lat: row.lat!,
       lng: row.lng!,
+      title: row.title,
+      description: row.description ?? undefined,
+    };
+  }
+  if (row.type === 'passcode') {
+    return {
+      id: row.id,
+      type: 'passcode',
+      passcode: row.passcode!,
       title: row.title,
       description: row.description ?? undefined,
     };

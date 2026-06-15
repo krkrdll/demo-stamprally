@@ -38,7 +38,7 @@ export default async function AdminPage() {
                 <th className="px-5 py-3 text-left font-medium text-gray-500">種別</th>
                 <th className="px-5 py-3 text-left font-medium text-gray-500">タイトル</th>
                 <th className="px-5 py-3 text-left font-medium text-gray-500 hidden md:table-cell">説明</th>
-                <th className="px-5 py-3 text-left font-medium text-gray-500 hidden lg:table-cell">GPS / マーカー</th>
+                <th className="px-5 py-3 text-left font-medium text-gray-500 hidden lg:table-cell">詳細情報</th>
                 <th className="px-5 py-3 text-right font-medium text-gray-500">操作</th>
               </tr>
             </thead>
@@ -50,10 +50,12 @@ export default async function AdminPage() {
                       className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
                         cp.type === 'gps'
                           ? 'bg-blue-100 text-blue-700'
+                          : cp.type === 'passcode'
+                          ? 'bg-purple-100 text-purple-700'
                           : 'bg-green-100 text-green-700'
                       }`}
                     >
-                      {cp.type === 'gps' ? '📡 GPS' : '📷 マーカー'}
+                      {cp.type === 'gps' ? '📡 GPS' : cp.type === 'passcode' ? '🔑 合言葉' : '📷 マーカー'}
                     </span>
                   </td>
                   <td className="px-5 py-4 font-medium text-gray-800">{cp.title}</td>
@@ -63,6 +65,8 @@ export default async function AdminPage() {
                   <td className="px-5 py-4 text-gray-400 font-mono text-xs hidden lg:table-cell">
                     {cp.type === 'gps'
                       ? `${cp.lat?.toFixed(4)}, ${cp.lng?.toFixed(4)}`
+                      : cp.type === 'passcode'
+                      ? cp.passcode
                       : cp.markerImageUrl}
                   </td>
                   <td className="px-5 py-4 text-right">

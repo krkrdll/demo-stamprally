@@ -13,10 +13,22 @@ type Props = {
 export default function StampRallyHome({ checkpoints }: Props) {
   const router = useRouter();
   const { stamps, hasStamp, clearAll, ready } = useStamps();
-  const [showModal, setShowModal] = useState(false);
+  const [selected, setSelected] = useState<Checkpoint | null>(null);
 
   const collectedCount = ready ? stamps.length : 0;
   const allCollected = collectedCount === checkpoints.length && collectedCount > 0;
+
+  function handleConfirm() {
+    if (!selected) return;
+    if (selected.type === 'gps') {
+      router.push(`/checkin/gps?id=${selected.id}`);
+    } else if (selected.type === 'passcode') {
+      router.push(`/checkin/passcode?id=${selected.id}`);
+    } else {
+      router.push('/checkin/camera');
+    }
+    setSelected(null);
+  }
 
   return (
     <div className="min-h-screen bg-amber-50">
@@ -29,7 +41,7 @@ export default function StampRallyHome({ checkpoints }: Props) {
         </p>
       </header>
 
-      <main className="p-4 max-w-lg mx-auto pb-28">
+      <main className="p-4 max-w-lg mx-auto pb-8">
         {allCollected && (
           <div className="bg-amber-500 text-white rounded-xl p-4 text-center mb-4 shadow-lg">
             <div className="text-4xl mb-1">🎉</div>
@@ -39,14 +51,24 @@ export default function StampRallyHome({ checkpoints }: Props) {
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          {checkpoints.map(cp => (
-            <StampCard
-              key={cp.id}
-              checkpoint={cp}
-              collected={ready ? hasStamp(cp.id) : false}
-              collectedAt={stamps.find(s => s.checkpointId === cp.id)?.collectedAt}
-            />
-          ))}
+          {checkpoints.map(cp => {
+            const collected = ready ? hasStamp(cp.id) : false;
+            return (
+              <button
+                key={cp.id}
+                type="button"
+                disabled={collected}
+                onClick={() => setSelected(cp)}
+                className="w-full text-left disabled:cursor-default active:scale-95 transition-transform"
+              >
+                <StampCard
+                  checkpoint={cp}
+                  collected={collected}
+                  collectedAt={stamps.find(s => s.checkpointId === cp.id)?.collectedAt}
+                />
+              </button>
+            );
+          })}
         </div>
 
         {ready && stamps.length > 0 && (
@@ -61,57 +83,37 @@ export default function StampRallyHome({ checkpoints }: Props) {
         )}
       </main>
 
-      <div className="fixed bottom-6 left-0 right-0 flex justify-center z-10">
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-bold py-4 px-10 rounded-full shadow-xl text-lg transition-all"
-        >
-          📍 チェックイン
-        </button>
-      </div>
-
-      {showModal && (
+      {selected && (
         <div
           className="fixed inset-0 bg-black/50 flex items-end justify-center z-50"
-          onClick={() => setShowModal(false)}
+          onClick={() => setSelected(null)}
         >
           <div
             className="bg-white rounded-t-2xl p-6 w-full max-w-lg"
             onClick={e => e.stopPropagation()}
           >
             <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
-            <h2 className="text-xl font-bold text-center mb-1">チェックイン方法を選択</h2>
-            <p className="text-gray-400 text-sm text-center mb-6">
-              どちらの方法でチェックインしますか？
-            </p>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <button
-                onClick={() => router.push('/checkin/gps')}
-                className="flex flex-col items-center gap-2 bg-blue-50 hover:bg-blue-100 active:scale-95 border-2 border-blue-200 rounded-xl p-5 transition-all"
-              >
-                <span className="text-4xl">📡</span>
-                <span className="font-bold text-blue-700">GPS</span>
-                <span className="text-xs text-gray-500 text-center leading-relaxed">
-                  現在地を確認して
-                  <br />
-                  スタンプをゲット
-                </span>
-              </button>
-              <button
-                onClick={() => router.push('/checkin/camera')}
-                className="flex flex-col items-center gap-2 bg-green-50 hover:bg-green-100 active:scale-95 border-2 border-green-200 rounded-xl p-5 transition-all"
-              >
-                <span className="text-4xl">📷</span>
-                <span className="font-bold text-green-700">カメラ</span>
-                <span className="text-xs text-gray-500 text-center leading-relaxed">
-                  マーカーをスキャンして
-                  <br />
-                  スタンプをゲット
-                </span>
-              </button>
+            <div className="text-center mb-5">
+              <div className="text-4xl mb-2">
+                {selected.type === 'gps' ? '📡' : selected.type === 'passcode' ? '🔑' : '📷'}
+              </div>
+              <h2 className="text-lg font-bold text-gray-800">{selected.title}</h2>
+              <p className="text-sm text-gray-400 mt-1">
+                {selected.type === 'gps'
+                  ? 'GPS で現在地を確認してチェックインします'
+                  : selected.type === 'passcode'
+                  ? '合言葉を入力してチェックインします'
+                  : 'カメラでマーカーをスキャンしてチェックインします'}
+              </p>
             </div>
             <button
-              onClick={() => setShowModal(false)}
+              onClick={handleConfirm}
+              className="w-full bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-bold py-3 rounded-xl transition-all mb-3"
+            >
+              チェックインする
+            </button>
+            <button
+              onClick={() => setSelected(null)}
               className="w-full text-gray-400 py-2 text-sm hover:text-gray-600 transition-colors"
             >
               キャンセル

@@ -2,13 +2,16 @@
 
 import { useState } from 'react';
 
+type CheckpointType = 'gps' | 'marker' | 'passcode';
+
 type DefaultValues = {
-  type: 'gps' | 'marker';
+  type: CheckpointType;
   title: string;
   description?: string | null;
   lat?: number | null;
   lng?: number | null;
   markerImageUrl?: string | null;
+  passcode?: string | null;
 };
 
 type Props = {
@@ -18,7 +21,7 @@ type Props = {
 };
 
 export default function CheckpointForm({ action, defaultValues, isEditing }: Props) {
-  const [type, setType] = useState<'gps' | 'marker'>(defaultValues?.type ?? 'gps');
+  const [type, setType] = useState<CheckpointType>(defaultValues?.type ?? 'gps');
 
   return (
     <form action={action} className="bg-white rounded-2xl shadow-sm p-6 space-y-5 max-w-lg">
@@ -51,6 +54,18 @@ export default function CheckpointForm({ action, defaultValues, isEditing }: Pro
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             📷 マーカー
+          </button>
+          <button
+            type="button"
+            disabled={isEditing}
+            onClick={() => setType('passcode')}
+            className={`flex-1 py-2.5 rounded-lg font-medium text-sm border-2 transition-all ${
+              type === 'passcode'
+                ? 'bg-purple-600 border-purple-600 text-white'
+                : 'bg-white border-gray-200 text-gray-600 hover:border-purple-300'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            🔑 合言葉
           </button>
         </div>
         {isEditing && (
@@ -139,6 +154,27 @@ export default function CheckpointForm({ action, defaultValues, isEditing }: Pro
           />
           <p className="text-xs text-gray-400 mt-1">
             空欄にすると /api/qr/&#123;id&#125; のQRコードが自動設定されます
+          </p>
+        </div>
+      )}
+
+      {/* Passcode */}
+      {type === 'passcode' && (
+        <div>
+          <label htmlFor="passcode" className="block text-sm font-medium text-gray-700 mb-1">
+            合言葉 <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="passcode"
+            name="passcode"
+            type="text"
+            required
+            defaultValue={defaultValues?.passcode ?? ''}
+            placeholder="例: さくら"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            参加者がこの合言葉を入力するとスタンプを獲得できます
           </p>
         </div>
       )}
