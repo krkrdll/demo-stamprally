@@ -2,10 +2,20 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useStamps } from '@/hooks/useStamps';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { haversineDistance } from '@/lib/distance';
 import type { GpsCheckpoint } from '@/lib/types';
+
+const MapView = dynamic(() => import('./MapView'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-64 rounded-xl bg-gray-100 animate-pulse flex items-center justify-center text-gray-400 text-sm">
+      地図を読み込み中...
+    </div>
+  ),
+});
 
 const RANGE_METERS = 20;
 
@@ -66,6 +76,7 @@ export default function GpsCheckinClient({ checkpoints }: Props) {
       </header>
 
       <div className="p-4 max-w-lg mx-auto space-y-3">
+        {/* 現在地パネル */}
         <div className="bg-white rounded-xl p-4 shadow-sm">
           <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
             現在地
@@ -90,6 +101,26 @@ export default function GpsCheckinClient({ checkpoints }: Props) {
           )}
         </div>
 
+        {/* 地図 */}
+        {checkpoints.length > 0 && (() => {
+          const cp = checkpoints[0];
+          const dist =
+            usedLat !== null && usedLng !== null
+              ? haversineDistance(usedLat, usedLng, cp.lat, cp.lng)
+              : null;
+          const inRange = dist !== null && dist <= RANGE_METERS;
+          return (
+            <MapView
+              userLat={usedLat}
+              userLng={usedLng}
+              cpLat={cp.lat}
+              cpLng={cp.lng}
+              inRange={inRange}
+            />
+          );
+        })()}
+
+        {/* チェックポイントカード */}
         {checkpoints.map(cp => {
           const dist =
             usedLat !== null && usedLng !== null
