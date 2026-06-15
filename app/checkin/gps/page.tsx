@@ -1,7 +1,7 @@
 import { getGpsCheckpoints } from '@/lib/checkpoints';
 import GpsCheckinClient from '@/components/GpsCheckinClient';
 
-export default function GpsCheckinPage() {
-  const checkpoints = getGpsCheckpoints();
+export default async function GpsCheckinPage() {
+  const checkpoints = await getGpsCheckpoints();
   return <GpsCheckinClient checkpoints={checkpoints} />;
 }

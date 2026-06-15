@@ -1,18 +1,53 @@
-import checkpointData from '@/data/checkpoints.json';
+import prisma from './prisma';
 import type { Checkpoint, GpsCheckpoint, MarkerCheckpoint } from './types';
 
-export function getAllCheckpoints(): Checkpoint[] {
-  return checkpointData.checkpoints as Checkpoint[];
+type Row = {
+  id: string;
+  type: string;
+  lat: number | null;
+  lng: number | null;
+  markerImageUrl: string | null;
+  title: string;
+  description: string | null;
+};
+
+function toCheckpoint(row: Row): Checkpoint {
+  if (row.type === 'gps') {
+    return {
+      id: row.id,
+      type: 'gps',
+      lat: row.lat!,
+      lng: row.lng!,
+      title: row.title,
+      description: row.description ?? undefined,
+    };
+  }
+  return {
+    id: row.id,
+    type: 'marker',
+    markerImageUrl: row.markerImageUrl!,
+    title: row.title,
+    description: row.description ?? undefined,
+  };
 }
 
-export function getGpsCheckpoints(): GpsCheckpoint[] {
-  return (checkpointData.checkpoints as Checkpoint[]).filter(
-    (cp): cp is GpsCheckpoint => cp.type === 'gps'
-  );
+export async function getAllCheckpoints(): Promise<Checkpoint[]> {
+  const rows = await prisma.checkpoint.findMany({ orderBy: { createdAt: 'asc' } });
+  return rows.map(toCheckpoint);
 }
 
-export function getMarkerCheckpoints(): MarkerCheckpoint[] {
-  return (checkpointData.checkpoints as Checkpoint[]).filter(
-    (cp): cp is MarkerCheckpoint => cp.type === 'marker'
-  );
+export async function getGpsCheckpoints(): Promise<GpsCheckpoint[]> {
+  const rows = await prisma.checkpoint.findMany({
+    where: { type: 'gps' },
+    orderBy: { createdAt: 'asc' },
+  });
+  return rows.map(toCheckpoint) as GpsCheckpoint[];
+}
+
+export async function getMarkerCheckpoints(): Promise<MarkerCheckpoint[]> {
+  const rows = await prisma.checkpoint.findMany({
+    where: { type: 'marker' },
+    orderBy: { createdAt: 'asc' },
+  });
+  return rows.map(toCheckpoint) as MarkerCheckpoint[];
 }
