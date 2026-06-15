@@ -1,0 +1,24 @@
+{
+  "name": "demo-stamprally",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/node": {
+      "version": "v24"
+    }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "runArgs": ["--name", "${localWorkspaceFolderBasename}"],
+  "containerEnv": {
+    "TZ": "Asia/Tokyo"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "Anthropic.claude-code"
+      ]
+    }
+  }
+}

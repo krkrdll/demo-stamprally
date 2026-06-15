@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# スタンプラリーデモアプリ
 
-## Getting Started
+何か所かのスポットを回り、チェックポイントでチェックしたらスタンプゲットできる、スタンプラリーのデモアプリを作成してください。
 
-First, run the development server:
+チェックポイントの種類には2種類あり、1つはGPS座標を指定し、指定範囲内に入ればスタンプゲット。1つはマーカー画像を設定し、カメラで対象のマーカーを読み込めばスタンプゲット。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+デモ用として、チェックポイントデータはローカルに保存したJSONから読み込んでください。
+
+```.jsonフォーマットサンプル
+{
+    "checkpoints": [
+        {
+            "id": "id001",
+            "type": "gps",
+            "lat": 0,
+            "long": 0,
+            "title": "title", 
+        },
+        {
+            "id": "id001",
+            "type": "marker",
+            "markerImageUrl": "/images/marker01.png",
+            "title": "title", 
+        },
+    ]
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 画面構成
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- トップページ: 現在集めたスタンプの情報が表示される。チェックインボタンを押すとチェックインの種類が問われ、GPSボタンを押すとGPSチェックインページに、カメラボタンを押すとカメラページに遷移する
+- GPSチェックインページ: 現在値のGPSを確認しスタンプラリーのチェックポイントとして設定されたGPSポイントと誤差20メートルの範囲にあればスタンプゲット
+- カメラページ: カメラが起動し、チェックポイントで設定したマーカーを認識したらスタンプゲット
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

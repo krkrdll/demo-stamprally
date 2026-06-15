@@ -24,3 +24,13 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes scanLine {
+  0%, 100% { top: 0; }
+  50% { top: calc(100% - 2px); }
+}
+
+.scan-line {
+  position: absolute;
+  animation: scanLine 2s ease-in-out infinite;
+}
