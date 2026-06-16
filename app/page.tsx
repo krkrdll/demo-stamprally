@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllCheckpoints } from '@/lib/checkpoints';
 import StampRallyHome from '@/components/StampRallyHome';
 
