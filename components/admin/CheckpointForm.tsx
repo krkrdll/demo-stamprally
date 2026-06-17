@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
+
+const MapPickerModal = dynamic(() => import('./MapPickerModal'), { ssr: false });
 
 type CheckpointType = 'gps' | 'marker' | 'passcode';
 
@@ -22,8 +25,26 @@ type Props = {
 
 export default function CheckpointForm({ action, defaultValues, isEditing }: Props) {
   const [type, setType] = useState<CheckpointType>(defaultValues?.type ?? 'gps');
+  const [lat, setLat] = useState<string>(defaultValues?.lat?.toString() ?? '');
+  const [lng, setLng] = useState<string>(defaultValues?.lng?.toString() ?? '');
+  const [showMapPicker, setShowMapPicker] = useState(false);
+
+  function handleMapConfirm(newLat: number, newLng: number) {
+    setLat(newLat.toFixed(6));
+    setLng(newLng.toFixed(6));
+    setShowMapPicker(false);
+  }
 
   return (
+    <>
+      {showMapPicker && (
+        <MapPickerModal
+          initialLat={lat ? parseFloat(lat) : null}
+          initialLng={lng ? parseFloat(lng) : null}
+          onConfirm={handleMapConfirm}
+          onClose={() => setShowMapPicker(false)}
+        />
+      )}
     <form action={action} className="bg-white rounded-2xl shadow-sm p-6 space-y-5 max-w-lg">
       <input type="hidden" name="type" value={type} />
 
@@ -104,37 +125,48 @@ export default function CheckpointForm({ action, defaultValues, isEditing }: Pro
 
       {/* GPS fields */}
       {type === 'gps' && (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="lat" className="block text-sm font-medium text-gray-700 mb-1">
-              緯度 (lat) <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="lat"
-              name="lat"
-              type="number"
-              step="any"
-              required
-              defaultValue={defaultValues?.lat ?? ''}
-              placeholder="35.6762"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm font-mono"
-            />
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="lat" className="block text-sm font-medium text-gray-700 mb-1">
+                緯度 (lat) <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="lat"
+                name="lat"
+                type="number"
+                step="any"
+                required
+                value={lat}
+                onChange={(e) => setLat(e.target.value)}
+                placeholder="35.6762"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm font-mono"
+              />
+            </div>
+            <div>
+              <label htmlFor="lng" className="block text-sm font-medium text-gray-700 mb-1">
+                経度 (lng) <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="lng"
+                name="lng"
+                type="number"
+                step="any"
+                required
+                value={lng}
+                onChange={(e) => setLng(e.target.value)}
+                placeholder="139.6503"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm font-mono"
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="lng" className="block text-sm font-medium text-gray-700 mb-1">
-              経度 (lng) <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="lng"
-              name="lng"
-              type="number"
-              step="any"
-              required
-              defaultValue={defaultValues?.lng ?? ''}
-              placeholder="139.6503"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm font-mono"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowMapPicker(true)}
+            className="w-full py-2 border-2 border-dashed border-blue-300 text-blue-600 hover:border-blue-400 hover:bg-blue-50 rounded-lg text-sm font-medium transition-all"
+          >
+            🗺️ 地図で位置を選択する
+          </button>
         </div>
       )}
 
@@ -194,5 +226,6 @@ export default function CheckpointForm({ action, defaultValues, isEditing }: Pro
         </a>
       </div>
     </form>
+    </>
   );
 }
