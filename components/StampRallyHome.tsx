@@ -31,10 +31,10 @@ export default function StampRallyHome({ checkpoints }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50">
-      <header className="bg-amber-600 text-white px-4 py-5 text-center shadow-md">
-        <h1 className="text-2xl font-bold tracking-wide">🗺️ スタンプラリー</h1>
-        <p className="text-amber-100 text-sm mt-1">
+    <div className="min-h-screen theme-bg-light">
+      <header className="theme-bg text-white px-4 py-5 text-center shadow-md">
+        <h1 className="text-2xl font-bold tracking-wide">スタンプラリー</h1>
+        <p className="theme-text-muted text-sm mt-1">
           {ready
             ? `${collectedCount} / ${checkpoints.length} スタンプ獲得`
             : '読み込み中...'}
@@ -43,10 +43,10 @@ export default function StampRallyHome({ checkpoints }: Props) {
 
       <main className="p-4 max-w-lg mx-auto pb-8">
         {allCollected && (
-          <div className="bg-amber-500 text-white rounded-xl p-4 text-center mb-4 shadow-lg">
+          <div className="theme-bg-mid text-white rounded-xl p-4 text-center mb-4 shadow-lg">
             <div className="text-4xl mb-1">🎉</div>
             <div className="font-bold text-lg">全スタンプコンプリート！</div>
-            <div className="text-amber-100 text-sm mt-1">おめでとうございます！</div>
+            <div className="theme-text-muted text-sm mt-1">おめでとうございます！</div>
           </div>
         )}
 
@@ -108,7 +108,7 @@ export default function StampRallyHome({ checkpoints }: Props) {
             </div>
             <button
               onClick={handleConfirm}
-              className="w-full bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-bold py-3 rounded-xl transition-all mb-3"
+              className="w-full theme-bg active:scale-95 text-white font-bold py-3 rounded-xl transition-all mb-3"
             >
               チェックインする
             </button>

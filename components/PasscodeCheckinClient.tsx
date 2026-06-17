@@ -39,7 +39,7 @@ export default function PasscodeCheckinClient({ checkpointId, title, description
   return (
     <div className="min-h-screen bg-purple-50">
       {collected && (
-        <div className="fixed inset-0 bg-amber-400 flex items-center justify-center z-50">
+        <div className="fixed inset-0 theme-bg-mid flex items-center justify-center z-50">
           <div className="text-center text-white animate-bounce">
             <div className="text-8xl mb-4">🟠</div>
             <div className="text-3xl font-bold">スタンプゲット！</div>
@@ -65,9 +65,9 @@ export default function PasscodeCheckinClient({ checkpointId, title, description
         </div>
 
         {alreadyHas ? (
-          <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 text-center">
+          <div className="theme-bg-light border-2 theme-border rounded-xl p-4 text-center">
             <div className="text-2xl mb-1">🟠</div>
-            <div className="font-bold text-amber-700">取得済みです</div>
+            <div className="font-bold theme-text">取得済みです</div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="bg-white rounded-xl p-5 shadow-sm space-y-4">

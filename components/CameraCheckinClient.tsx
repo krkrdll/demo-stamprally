@@ -107,7 +107,7 @@ export default function CameraCheckinClient({ checkpoints }: Props) {
 
   if (foundTitle) {
     return (
-      <div className="fixed inset-0 bg-amber-400 flex items-center justify-center z-50">
+      <div className="fixed inset-0 theme-bg-mid flex items-center justify-center z-50">
         <div className="text-center text-white">
           <div className="text-8xl mb-4 animate-bounce">🟠</div>
           <div className="text-3xl font-bold">スタンプゲット！</div>
@@ -161,12 +161,12 @@ export default function CameraCheckinClient({ checkpoints }: Props) {
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <div className="relative w-56 h-56">
           {/* Corner decorations */}
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-amber-400 rounded-tl-sm" />
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-amber-400 rounded-tr-sm" />
-          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-amber-400 rounded-bl-sm" />
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-amber-400 rounded-br-sm" />
+          <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 theme-border rounded-tl-sm" />
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 theme-border rounded-tr-sm" />
+          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 theme-border rounded-bl-sm" />
+          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 theme-border rounded-br-sm" />
           {/* Animated scan line */}
-          <div className="absolute left-2 right-2 h-0.5 bg-amber-400/80 scan-line" />
+          <div className="absolute left-2 right-2 h-0.5 theme-bg-mid opacity-80 scan-line" />
         </div>
         <div className="mt-5 bg-black/60 text-white/90 text-sm px-5 py-2 rounded-full">
           QRコードをスキャン中...
@@ -202,7 +202,7 @@ export default function CameraCheckinClient({ checkpoints }: Props) {
 
       {uncollectedCheckpoints.length === 0 && (
         <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-4 text-center">
-          <div className="text-amber-400 font-semibold">全マーカースタンプを取得済みです 🎉</div>
+          <div className="theme-text-mid font-semibold">全マーカースタンプを取得済みです 🎉</div>
         </div>
       )}
     </div>

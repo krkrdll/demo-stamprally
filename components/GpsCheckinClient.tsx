@@ -57,7 +57,7 @@ export default function GpsCheckinClient({ checkpoints }: Props) {
   return (
     <div className="min-h-screen bg-blue-50">
       {collectedId && (
-        <div className="fixed inset-0 bg-amber-400 flex items-center justify-center z-50">
+        <div className="fixed inset-0 theme-bg-mid flex items-center justify-center z-50">
           <div className="text-center text-white animate-bounce">
             <div className="text-8xl mb-4">🟠</div>
             <div className="text-3xl font-bold">スタンプゲット！</div>
@@ -92,7 +92,7 @@ export default function GpsCheckinClient({ checkpoints }: Props) {
                 <div className="text-xs text-gray-400 mt-0.5">精度: ±{Math.round(accuracy)}m</div>
               )}
               {demoLat !== null && (
-                <div className="text-xs text-amber-500 mt-0.5 flex items-center gap-1">
+                <div className="text-xs theme-text mt-0.5 flex items-center gap-1">
                   <span>⚠️</span>
                   <span>デモ位置を使用中</span>
                 </div>
@@ -139,7 +139,7 @@ export default function GpsCheckinClient({ checkpoints }: Props) {
                   )}
                   <div className="mt-2 text-sm">
                     {alreadyHas ? (
-                      <span className="text-amber-600 font-medium">✅ 取得済み</span>
+                      <span className="theme-text font-medium">✅ 取得済み</span>
                     ) : dist !== null ? (
                       inRange ? (
                         <span className="text-green-600 font-bold">✅ 範囲内！（{Math.round(dist)}m）</span>
@@ -157,7 +157,7 @@ export default function GpsCheckinClient({ checkpoints }: Props) {
               {!alreadyHas && inRange && (
                 <button
                   onClick={() => collectStamp(cp)}
-                  className="mt-3 w-full bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold py-2.5 rounded-lg transition-all"
+                  className="mt-3 w-full theme-bg active:scale-95 text-white font-bold py-2.5 rounded-lg transition-all"
                 >
                   スタンプをゲット！
                 </button>

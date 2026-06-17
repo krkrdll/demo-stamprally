@@ -3,6 +3,13 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Brand theme — defaults to amber, overridden by root layout */
+  --color-brand:        #d97706;
+  --color-brand-dark:   #b45309;
+  --color-brand-mid:    #f59e0b;
+  --color-brand-border: #fbbf24;
+  --color-brand-muted:  #fef3c7;
+  --color-brand-light:  #fffbeb;
 }
 
 @theme inline {
@@ -24,6 +31,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Theme utility classes */
+.theme-bg             { background-color: var(--color-brand); }
+.theme-bg:hover       { background-color: var(--color-brand-dark); }
+.theme-bg:active      { background-color: var(--color-brand-dark); }
+.theme-bg-mid         { background-color: var(--color-brand-mid); }
+.theme-bg-light       { background-color: var(--color-brand-light); }
+.theme-text           { color: var(--color-brand); }
+.theme-text-mid       { color: var(--color-brand-mid); }
+.theme-text-muted     { color: var(--color-brand-muted); }
+.theme-border         { border-color: var(--color-brand-border); }
 
 @keyframes scanLine {
   0%, 100% { top: 0; }

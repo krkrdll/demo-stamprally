@@ -17,6 +17,12 @@ export default function AdminSidebar() {
         >
           📋 チェックポイント一覧
         </Link>
+        <Link
+          href="/admin/settings"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors"
+        >
+          ⚙️ サイト設定
+        </Link>
       </nav>
 
       {/* Bottom */}

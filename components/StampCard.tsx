@@ -11,7 +11,7 @@ export default function StampCard({ checkpoint, collected, collectedAt }: Props)
     <div
       className={`rounded-xl border-2 p-3 flex flex-col items-center text-center transition-all ${
         collected
-          ? 'border-amber-400 bg-amber-50 shadow-md'
+          ? 'theme-border theme-bg-light shadow-md'
           : 'border-gray-200 bg-white'
       }`}
     >
@@ -42,7 +42,7 @@ export default function StampCard({ checkpoint, collected, collectedAt }: Props)
       </div>
 
       {collected && collectedAt && (
-        <div className="text-xs text-amber-600 mt-1">
+        <div className="text-xs theme-text mt-1">
           {new Date(collectedAt).toLocaleDateString('ja-JP')}
         </div>
       )}
