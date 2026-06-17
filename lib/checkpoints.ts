@@ -42,14 +42,14 @@ function toCheckpoint(row: Row): Checkpoint {
 }
 
 export async function getAllCheckpoints(): Promise<Checkpoint[]> {
-  const rows = await prisma.checkpoint.findMany({ orderBy: { createdAt: 'asc' } });
+  const rows = await prisma.checkpoint.findMany({ orderBy: [{ order: 'asc' }, { createdAt: 'asc' }] });
   return rows.map(toCheckpoint);
 }
 
 export async function getGpsCheckpoints(): Promise<GpsCheckpoint[]> {
   const rows = await prisma.checkpoint.findMany({
     where: { type: 'gps' },
-    orderBy: { createdAt: 'asc' },
+    orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
   });
   return rows.map(toCheckpoint) as GpsCheckpoint[];
 }
@@ -57,7 +57,7 @@ export async function getGpsCheckpoints(): Promise<GpsCheckpoint[]> {
 export async function getMarkerCheckpoints(): Promise<MarkerCheckpoint[]> {
   const rows = await prisma.checkpoint.findMany({
     where: { type: 'marker' },
-    orderBy: { createdAt: 'asc' },
+    orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
   });
   return rows.map(toCheckpoint) as MarkerCheckpoint[];
 }

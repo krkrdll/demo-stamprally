@@ -10,6 +10,7 @@ datasource db {
 model Checkpoint {
   id             String   @id
   type           String
+  order          Int      @default(0)
   lat            Float?
   lng            Float?
   markerImageUrl String?

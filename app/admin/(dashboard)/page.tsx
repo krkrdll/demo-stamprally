@@ -3,9 +3,10 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import ConfirmDeleteForm from '@/components/admin/ConfirmDeleteForm';
+import ReorderButtons from '@/components/admin/ReorderButtons';
 
 export default async function AdminPage() {
-  const checkpoints = await prisma.checkpoint.findMany({ orderBy: { createdAt: 'asc' } });
+  const checkpoints = await prisma.checkpoint.findMany({ orderBy: [{ order: 'asc' }, { createdAt: 'asc' }] });
 
   return (
     <div>
@@ -35,6 +36,7 @@ export default async function AdminPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
+                <th className="px-3 py-3 text-left font-medium text-gray-500">順序</th>
                 <th className="px-5 py-3 text-left font-medium text-gray-500">種別</th>
                 <th className="px-5 py-3 text-left font-medium text-gray-500">タイトル</th>
                 <th className="px-5 py-3 text-left font-medium text-gray-500 hidden md:table-cell">説明</th>
@@ -43,8 +45,11 @@ export default async function AdminPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {checkpoints.map(cp => (
+              {checkpoints.map((cp, i) => (
                 <tr key={cp.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-3 py-4">
+                    <ReorderButtons id={cp.id} isFirst={i === 0} isLast={i === checkpoints.length - 1} />
+                  </td>
                   <td className="px-5 py-4">
                     <span
                       className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
