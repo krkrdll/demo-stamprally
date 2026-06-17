@@ -4,6 +4,7 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import MarkerImagePreview from './MarkerImagePreview';
 import type { CheckpointCondition } from '@/lib/types';
+import { MdGpsFixed, MdQrCodeScanner, MdKey, MdMap, MdAdd, MdDelete } from 'react-icons/md';
 
 const MapPickerModal = dynamic(() => import('./MapPickerModal'), { ssr: false });
 
@@ -79,7 +80,11 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
     action(fd);
   }
 
-  const typeLabel: Record<string, string> = { gps: '📡 GPS', marker: '📷 マーカー', passcode: '🔑 合言葉' };
+  const typeLabel: Record<string, React.ReactNode> = {
+    gps: <><MdGpsFixed className="inline mr-1" />GPS</>,
+    marker: <><MdQrCodeScanner className="inline mr-1" />マーカー</>,
+    passcode: <><MdKey className="inline mr-1" />合言葉</>,
+  };
   const typeColors: Record<string, string> = {
     gps: 'bg-blue-600 border-blue-600',
     marker: 'bg-green-600 border-green-600',
@@ -151,9 +156,9 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
                   <button
                     type="button"
                     onClick={() => removeCondition(i)}
-                    className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                    className="flex items-center gap-0.5 text-xs text-red-400 hover:text-red-600 transition-colors"
                   >
-                    削除
+                    <MdDelete size={14} />削除
                   </button>
                 )}
               </div>
@@ -214,7 +219,7 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
                     onClick={() => setMapPickerFor(i)}
                     className="w-full py-2 border-2 border-dashed border-blue-300 text-blue-600 hover:border-blue-400 hover:bg-blue-50 rounded-lg text-xs font-medium transition-all"
                   >
-                    🗺️ 地図で位置を選択する
+                    <MdMap className="inline mr-1" />地図で位置を選択する
                   </button>
                 </div>
               )}
@@ -274,9 +279,9 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
           <button
             type="button"
             onClick={addCondition}
-            className="w-full py-2.5 border-2 border-dashed border-amber-300 text-amber-600 hover:border-amber-400 hover:bg-amber-50 rounded-xl text-sm font-medium transition-all"
+            className="w-full py-2.5 border-2 border-dashed border-amber-300 text-amber-600 hover:border-amber-400 hover:bg-amber-50 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-1"
           >
-            + 条件を追加
+            <MdAdd size={16} />条件を追加
           </button>
         </div>
 

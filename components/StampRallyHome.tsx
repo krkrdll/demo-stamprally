@@ -5,13 +5,19 @@ import { useRouter } from 'next/navigation';
 import { useStamps } from '@/hooks/useStamps';
 import type { Checkpoint } from '@/lib/types';
 import StampCard from './StampCard';
+import { MdGpsFixed, MdQrCodeScanner, MdKey, MdHelp, MdCelebration } from 'react-icons/md';
 
 type Props = {
   checkpoints: Checkpoint[];
   siteTitle: string;
 };
 
-const CONDITION_ICON: Record<string, string> = { gps: '📡', marker: '📷', passcode: '🔑' };
+const CONDITION_ICON: Record<string, React.ReactNode> = {
+  gps: <MdGpsFixed />,
+  marker: <MdQrCodeScanner />,
+  passcode: <MdKey />,
+};
+
 const CONDITION_LABEL: Record<string, string> = {
   gps: 'GPS で現在地を確認',
   marker: 'カメラでマーカーをスキャン',
@@ -46,7 +52,7 @@ export default function StampRallyHome({ checkpoints, siteTitle }: Props) {
       <main className="p-4 max-w-lg mx-auto pb-8">
         {allCollected && (
           <div className="theme-bg-mid text-white rounded-xl p-4 text-center mb-4 shadow-lg">
-            <div className="text-4xl mb-1">🎉</div>
+            <MdCelebration size={40} className="mx-auto mb-1" />
             <div className="font-bold text-lg">全スタンプコンプリート！</div>
             <div className="theme-text-muted text-sm mt-1">おめでとうございます！</div>
           </div>
@@ -100,7 +106,9 @@ export default function StampRallyHome({ checkpoints, siteTitle }: Props) {
               <div className="space-y-2">
                 {selected.conditions.map((c, i) => (
                   <div key={c.id} className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2">
-                    <span className="text-base">{CONDITION_ICON[c.type] ?? '❓'}</span>
+                    <span className="text-lg flex-shrink-0">
+                      {CONDITION_ICON[c.type] ?? <MdHelp />}
+                    </span>
                     <span>{CONDITION_LABEL[c.type] ?? c.type}</span>
                     {selected.conditions.length > 1 && (
                       <span className="ml-auto text-xs text-gray-400">条件{i + 1}</span>

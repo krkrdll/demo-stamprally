@@ -8,6 +8,11 @@ import { useGeolocation } from '@/hooks/useGeolocation';
 import { haversineDistance } from '@/lib/distance';
 import { verifyPasscode } from '@/lib/actions/checkin';
 import type { Checkpoint, CheckpointCondition, ConditionGps } from '@/lib/types';
+import {
+  MdGpsFixed, MdQrCodeScanner, MdKey, MdHelp,
+  MdAdjust, MdCheckCircle, MdArrowBack, MdBuildCircle,
+  MdStraighten,
+} from 'react-icons/md';
 
 const MapView = dynamic(() => import('./MapView'), {
   ssr: false,
@@ -59,25 +64,25 @@ function GpsWidget({
           : usedLat !== null
           ? dist !== null
             ? inRange
-              ? <span className="text-green-600 font-semibold">✅ 範囲内！（{Math.round(dist)}m）</span>
-              : <span>📏 {Math.round(dist)}m 離れています（{RANGE_METERS}m 以内で達成）</span>
+              ? <span className="text-green-600 font-semibold flex items-center gap-1"><MdCheckCircle size={16} />範囲内！（{Math.round(dist)}m）</span>
+              : <span className="flex items-center gap-1"><MdStraighten size={16} />{Math.round(dist)}m 離れています（{RANGE_METERS}m 以内で達成）</span>
             : '距離計算中...'
           : '位置情報を取得中...'}
       </div>
       {inRange && (
         <button
           onClick={onVerify}
-          className="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-2.5 rounded-lg text-sm transition-all"
+          className="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-2.5 rounded-lg text-sm transition-all flex items-center justify-center gap-2"
         >
-          📡 現在地を確認する
+          <MdGpsFixed size={18} />現在地を確認する
         </button>
       )}
       {!inRange && (
         <button
           onClick={() => { setDemoLat(condition.lat); setDemoLng(condition.lng); }}
-          className="w-full bg-gray-50 hover:bg-gray-100 text-gray-400 text-xs py-2 rounded-lg border border-dashed border-gray-200 transition-colors"
+          className="w-full bg-gray-50 hover:bg-gray-100 text-gray-400 text-xs py-2 rounded-lg border border-dashed border-gray-200 transition-colors flex items-center justify-center gap-1"
         >
-          🔧 デモ: この場所にいると仮定する
+          <MdBuildCircle size={14} />デモ: この場所にいると仮定する
         </button>
       )}
       {demoLat !== null && (
@@ -133,7 +138,7 @@ function PasscodeWidget({
         disabled={!value.trim() || isPending}
         className="w-full bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-bold py-2.5 rounded-lg text-sm transition-all disabled:opacity-50"
       >
-        {isPending ? '確認中...' : '🔑 合言葉を確認する'}
+        {isPending ? '確認中...' : <span className="flex items-center justify-center gap-2"><MdKey size={18} />合言葉を確認する</span>}
       </button>
     </form>
   );
@@ -250,18 +255,24 @@ function CameraWidget({
       {camError && <p className="text-red-500 text-xs">{camError}</p>}
       <button
         onClick={() => { setCamError(null); setScanning(true); }}
-        className="w-full bg-green-600 hover:bg-green-700 active:scale-95 text-white font-bold py-2.5 rounded-lg text-sm transition-all"
+        className="w-full bg-green-600 hover:bg-green-700 active:scale-95 text-white font-bold py-2.5 rounded-lg text-sm transition-all flex items-center justify-center gap-2"
       >
-        📷 マーカーをスキャン
+        <MdQrCodeScanner size={18} />マーカーをスキャン
       </button>
     </div>
   );
 }
 
+const CONDITION_ICON: Record<string, React.ReactNode> = {
+  gps: <MdGpsFixed />,
+  marker: <MdQrCodeScanner />,
+  passcode: <MdKey />,
+};
+
 const CONDITION_LABEL: Record<string, string> = {
-  gps: '📡 現在地確認',
-  marker: '📷 マーカースキャン',
-  passcode: '🔑 合言葉入力',
+  gps: '現在地確認',
+  marker: 'マーカースキャン',
+  passcode: '合言葉入力',
 };
 
 // ---- Main component ----
@@ -290,7 +301,7 @@ export default function MultiConditionCheckinClient({ checkpoint }: Props) {
       {collected && (
         <div className="fixed inset-0 theme-bg-mid flex items-center justify-center z-50">
           <div className="text-center text-white animate-bounce">
-            <div className="text-8xl mb-4">🟠</div>
+            <MdAdjust size={96} className="mx-auto mb-4" />
             <div className="text-3xl font-bold">スタンプゲット！</div>
           </div>
         </div>
@@ -299,9 +310,9 @@ export default function MultiConditionCheckinClient({ checkpoint }: Props) {
       <header className="theme-bg text-white px-4 py-4 flex items-center gap-3 shadow">
         <button
           onClick={() => router.back()}
-          className="text-2xl w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
         >
-          ←
+          <MdArrowBack size={22} />
         </button>
         <h1 className="text-xl font-bold">チェックイン</h1>
         {total > 1 && !alreadyHas && (
@@ -327,7 +338,7 @@ export default function MultiConditionCheckinClient({ checkpoint }: Props) {
 
         {alreadyHas ? (
           <div className="theme-bg-light border-2 theme-border rounded-xl p-4 text-center">
-            <div className="text-2xl mb-1">🟠</div>
+            <MdAdjust size={32} className="mx-auto mb-1 theme-text" />
             <div className="font-bold theme-text">取得済みです</div>
           </div>
         ) : (
@@ -351,7 +362,7 @@ export default function MultiConditionCheckinClient({ checkpoint }: Props) {
                     <span className="text-sm font-medium text-green-700">
                       {CONDITION_LABEL[cond.type] ?? cond.type}
                     </span>
-                    <span className="ml-auto text-green-500">✅</span>
+                    <MdCheckCircle size={20} className="ml-auto text-green-500" />
                   </div>
                 );
               }
@@ -364,6 +375,7 @@ export default function MultiConditionCheckinClient({ checkpoint }: Props) {
                         {i + 1}
                       </span>
                     )}
+                    <span className="text-lg text-gray-500">{CONDITION_ICON[cond.type] ?? <MdHelp />}</span>
                     <span className="text-sm font-semibold text-gray-700">
                       {CONDITION_LABEL[cond.type] ?? cond.type}
                     </span>
@@ -385,9 +397,9 @@ export default function MultiConditionCheckinClient({ checkpoint }: Props) {
             {allVerified && (
               <button
                 onClick={handleCollect}
-                className="w-full theme-bg active:scale-95 text-white font-bold py-4 rounded-xl transition-all text-lg shadow-lg"
+                className="w-full theme-bg active:scale-95 text-white font-bold py-4 rounded-xl transition-all text-lg shadow-lg flex items-center justify-center gap-2"
               >
-                🟠 スタンプをゲット！
+                <MdAdjust size={24} />スタンプをゲット！
               </button>
             )}
           </>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStamps } from '@/hooks/useStamps';
 import type { Checkpoint } from '@/lib/types';
+import { MdAdjust, MdQrCodeScanner, MdArrowBack, MdBuildCircle, MdCelebration } from 'react-icons/md';
 
 type Props = {
   checkpoints: Checkpoint[];
@@ -108,7 +109,7 @@ export default function CameraCheckinClient({ checkpoints }: Props) {
     return (
       <div className="fixed inset-0 theme-bg-mid flex items-center justify-center z-50">
         <div className="text-center text-white">
-          <div className="text-8xl mb-4 animate-bounce">🟠</div>
+          <MdAdjust size={96} className="mx-auto mb-4 animate-bounce" />
           <div className="text-3xl font-bold">スタンプゲット！</div>
           <div className="text-xl mt-3 opacity-90">{foundTitle}</div>
         </div>
@@ -120,7 +121,7 @@ export default function CameraCheckinClient({ checkpoints }: Props) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-8">
         <div className="text-center text-white">
-          <div className="text-6xl mb-4">📷</div>
+          <MdQrCodeScanner size={64} className="mx-auto mb-4 text-gray-400" />
           <div className="text-red-400 mb-6 leading-relaxed">{camError}</div>
           <button
             onClick={() => router.back()}
@@ -147,9 +148,9 @@ export default function CameraCheckinClient({ checkpoints }: Props) {
       <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent px-4 pt-4 pb-8 flex items-center gap-3 z-10">
         <button
           onClick={() => router.back()}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-black/40 text-white text-xl hover:bg-black/60 transition-colors"
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
         >
-          ←
+          <MdArrowBack size={22} />
         </button>
         <h1 className="text-white text-xl font-bold">カメラ チェックイン</h1>
       </div>
@@ -170,8 +171,9 @@ export default function CameraCheckinClient({ checkpoints }: Props) {
       {uncollectedCheckpoints.length > 0 && (
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/80 to-transparent pt-8">
           <div className="px-4 pb-6">
-            <div className="text-xs text-gray-300 text-center mb-3">
-              🔧 デモ用QRコード（カメラで読み取ってテスト）
+            <div className="flex items-center justify-center gap-1.5 text-xs text-gray-300 mb-3">
+              <MdBuildCircle size={14} />
+              <span>デモ用QRコード（カメラで読み取ってテスト）</span>
             </div>
             <div className="flex gap-4 justify-center">
               {uncollectedCheckpoints.map(cp => {
@@ -199,7 +201,10 @@ export default function CameraCheckinClient({ checkpoints }: Props) {
 
       {uncollectedCheckpoints.length === 0 && (
         <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-4 text-center">
-          <div className="theme-text-mid font-semibold">全マーカースタンプを取得済みです 🎉</div>
+          <div className="flex items-center justify-center gap-2 theme-text-mid font-semibold">
+            <MdCelebration size={18} />
+            <span>全マーカースタンプを取得済みです</span>
+          </div>
         </div>
       )}
     </div>

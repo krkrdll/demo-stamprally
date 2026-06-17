@@ -1,4 +1,5 @@
 import type { Checkpoint } from '@/lib/types';
+import { MdGpsFixed, MdQrCodeScanner, MdKey, MdHelp, MdAdjust } from 'react-icons/md';
 
 type Props = {
   checkpoint: Checkpoint;
@@ -6,7 +7,11 @@ type Props = {
   collectedAt?: string;
 };
 
-const CONDITION_ICON: Record<string, string> = { gps: '📡', marker: '📷', passcode: '🔑' };
+const CONDITION_ICON: Record<string, React.ReactNode> = {
+  gps: <MdGpsFixed />,
+  marker: <MdQrCodeScanner />,
+  passcode: <MdKey />,
+};
 
 export default function StampCard({ checkpoint, collected, collectedAt }: Props) {
   const markerCondition = checkpoint.conditions.find(c => c.type === 'marker');
@@ -21,7 +26,7 @@ export default function StampCard({ checkpoint, collected, collectedAt }: Props)
       }`}
     >
       {collected ? (
-        <div className="text-5xl mb-2">🟠</div>
+        <MdAdjust size={48} className="mb-2 theme-text" />
       ) : markerCondition && markerCondition.type === 'marker' ? (
         <img
           src={markerCondition.markerImageUrl}
@@ -29,9 +34,9 @@ export default function StampCard({ checkpoint, collected, collectedAt }: Props)
           className="w-16 h-16 mb-2 rounded border border-gray-100"
         />
       ) : (
-        <div className="w-16 h-16 mb-2 rounded-full border-4 border-dashed border-gray-200 flex items-center justify-center gap-0.5">
+        <div className="w-16 h-16 mb-2 rounded-full border-4 border-dashed border-gray-200 flex items-center justify-center gap-0.5 text-gray-300 text-xl">
           {conditionTypes.slice(0, 2).map((t, i) => (
-            <span key={i} className="text-lg leading-none">{CONDITION_ICON[t] ?? '❓'}</span>
+            <span key={i}>{CONDITION_ICON[t] ?? <MdHelp />}</span>
           ))}
         </div>
       )}
@@ -40,9 +45,9 @@ export default function StampCard({ checkpoint, collected, collectedAt }: Props)
         {checkpoint.title}
       </div>
 
-      <div className="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1 flex-wrap">
+      <div className="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
         {conditionTypes.map((t, i) => (
-          <span key={i}>{CONDITION_ICON[t] ?? '❓'}</span>
+          <span key={i} className="text-sm">{CONDITION_ICON[t] ?? <MdHelp />}</span>
         ))}
       </div>
 

@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import { logout } from '@/lib/actions/auth';
+import { MdBuild, MdListAlt, MdSettings, MdOpenInNew } from 'react-icons/md';
 
 export default function AdminSidebar() {
   return (
     <aside className="w-56 shrink-0 min-h-screen bg-gray-900 text-white flex flex-col">
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-gray-800">
-        <span className="font-bold text-base">🛠️ 管理画面</span>
+      <div className="px-5 py-5 border-b border-gray-800 flex items-center gap-2">
+        <MdBuild size={18} />
+        <span className="font-bold text-base">管理画面</span>
       </div>
 
       {/* Nav */}
@@ -15,13 +17,15 @@ export default function AdminSidebar() {
           href="/admin"
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors"
         >
-          📋 チェックポイント一覧
+          <MdListAlt size={16} />
+          チェックポイント一覧
         </Link>
         <Link
           href="/admin/settings"
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors"
         >
-          ⚙️ サイト設定
+          <MdSettings size={16} />
+          サイト設定
         </Link>
       </nav>
 
@@ -33,7 +37,8 @@ export default function AdminSidebar() {
           rel="noopener noreferrer"
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-sm transition-colors"
         >
-          サイトを見る ↗
+          サイトを見る
+          <MdOpenInNew size={14} className="ml-auto" />
         </Link>
         <form action={logout}>
           <button

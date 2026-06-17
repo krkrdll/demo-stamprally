@@ -5,11 +5,18 @@ import prisma from '@/lib/prisma';
 import ConfirmDeleteForm from '@/components/admin/ConfirmDeleteForm';
 import ReorderButtons from '@/components/admin/ReorderButtons';
 import MarkerImagePreview from '@/components/admin/MarkerImagePreview';
+import { MdGpsFixed, MdQrCodeScanner, MdKey, MdInbox, MdAdd } from 'react-icons/md';
 
-const CONDITION_LABEL: Record<string, string> = {
-  gps: '📡 GPS',
-  marker: '📷 マーカー',
-  passcode: '🔑 合言葉',
+const CONDITION_ICON: Record<string, React.ReactNode> = {
+  gps: <MdGpsFixed />,
+  marker: <MdQrCodeScanner />,
+  passcode: <MdKey />,
+};
+
+const CONDITION_NAME: Record<string, string> = {
+  gps: 'GPS',
+  marker: 'マーカー',
+  passcode: '合言葉',
 };
 
 const CONDITION_COLOR: Record<string, string> = {
@@ -33,15 +40,15 @@ export default async function AdminPage() {
         </div>
         <Link
           href="/admin/checkpoints/new"
-          className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors"
+          className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-1"
         >
-          + 新規追加
+          <MdAdd size={16} />新規追加
         </Link>
       </div>
 
       {checkpoints.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center shadow-sm">
-          <div className="text-4xl mb-3">📋</div>
+          <MdInbox size={40} className="mx-auto mb-3 text-gray-300" />
           <p className="text-gray-400">チェックポイントがありません</p>
           <Link href="/admin/checkpoints/new" className="text-amber-600 hover:underline text-sm mt-2 inline-block">
             最初のチェックポイントを追加する
@@ -73,7 +80,8 @@ export default async function AdminPage() {
                           key={c.id}
                           className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${CONDITION_COLOR[c.type] ?? 'bg-gray-100 text-gray-600'}`}
                         >
-                          {CONDITION_LABEL[c.type] ?? c.type}
+                          {CONDITION_ICON[c.type]}
+                          {CONDITION_NAME[c.type] ?? c.type}
                         </span>
                       ))}
                       {cp.conditions.length === 0 && (

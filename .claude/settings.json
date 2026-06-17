@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(npx *)",
-      "Bash(find *)"
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(npm *)",
+      "Bash(mkdir *)",
+      "Bash(ls *)",
+      "Bash(cd *)",
+      "Bash(node *)"
     ]
   }
 }

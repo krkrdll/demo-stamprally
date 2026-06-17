@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { login, type LoginState } from '@/lib/actions/auth';
+import { MdBuild } from 'react-icons/md';
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState<LoginState, FormData>(login, null);
@@ -10,7 +11,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm">
         <div className="text-center mb-6">
-          <div className="text-4xl mb-2">🛠️</div>
+          <MdBuild size={40} className="mx-auto mb-2 text-gray-400" />
           <h1 className="text-2xl font-bold text-gray-800">管理者ログイン</h1>
           <p className="text-gray-400 text-sm mt-1">スタンプラリー管理画面</p>
         </div>

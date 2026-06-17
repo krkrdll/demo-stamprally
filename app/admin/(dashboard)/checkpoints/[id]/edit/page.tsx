@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import CheckpointForm from '@/components/admin/CheckpointForm';
 import { updateCheckpoint } from '@/lib/actions/checkpoints';
 import { getCheckpointById } from '@/lib/checkpoints';
+import { MdArrowBack } from 'react-icons/md';
 
 export default async function EditCheckpointPage({
   params,
@@ -18,8 +19,8 @@ export default async function EditCheckpointPage({
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/admin" className="text-gray-400 hover:text-gray-600 transition-colors">
-          ← 一覧に戻る
+        <Link href="/admin" className="text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1">
+          <MdArrowBack size={16} />一覧に戻る
         </Link>
         <span className="text-gray-300">/</span>
         <h1 className="text-xl font-bold text-gray-800">チェックポイント編集</h1>
