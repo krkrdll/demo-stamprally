@@ -4,6 +4,7 @@ import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import ConfirmDeleteForm from '@/components/admin/ConfirmDeleteForm';
 import ReorderButtons from '@/components/admin/ReorderButtons';
+import MarkerImagePreview from '@/components/admin/MarkerImagePreview';
 
 export default async function AdminPage() {
   const checkpoints = await prisma.checkpoint.findMany({ orderBy: [{ order: 'asc' }, { createdAt: 'asc' }] });
@@ -68,11 +69,16 @@ export default async function AdminPage() {
                     {cp.description ?? '—'}
                   </td>
                   <td className="px-5 py-4 text-gray-400 font-mono text-xs hidden lg:table-cell">
-                    {cp.type === 'gps'
-                      ? `${cp.lat?.toFixed(4)}, ${cp.lng?.toFixed(4)}`
-                      : cp.type === 'passcode'
-                      ? cp.passcode
-                      : cp.markerImageUrl}
+                    {cp.type === 'gps' ? (
+                      `${cp.lat?.toFixed(4)}, ${cp.lng?.toFixed(4)}`
+                    ) : cp.type === 'passcode' ? (
+                      cp.passcode
+                    ) : (
+                      <MarkerImagePreview
+                        url={cp.markerImageUrl ?? `/api/qr/${cp.id}`}
+                        filename={`qr-${cp.id}`}
+                      />
+                    )}
                   </td>
                   <td className="px-5 py-4 text-right">
                     <div className="flex items-center justify-end gap-3">

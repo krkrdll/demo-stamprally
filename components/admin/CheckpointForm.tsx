@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import MarkerImagePreview from './MarkerImagePreview';
 
 const MapPickerModal = dynamic(() => import('./MapPickerModal'), { ssr: false });
 
@@ -21,13 +22,15 @@ type Props = {
   action: (formData: FormData) => Promise<void>;
   defaultValues?: DefaultValues;
   isEditing?: boolean;
+  checkpointId?: string;
 };
 
-export default function CheckpointForm({ action, defaultValues, isEditing }: Props) {
+export default function CheckpointForm({ action, defaultValues, isEditing, checkpointId }: Props) {
   const [type, setType] = useState<CheckpointType>(defaultValues?.type ?? 'gps');
   const [lat, setLat] = useState<string>(defaultValues?.lat?.toString() ?? '');
   const [lng, setLng] = useState<string>(defaultValues?.lng?.toString() ?? '');
   const [showMapPicker, setShowMapPicker] = useState(false);
+  const [markerImageUrl, setMarkerImageUrl] = useState<string>(defaultValues?.markerImageUrl ?? '');
 
   function handleMapConfirm(newLat: number, newLng: number) {
     setLat(newLat.toFixed(6));
@@ -172,21 +175,35 @@ export default function CheckpointForm({ action, defaultValues, isEditing }: Pro
 
       {/* Marker URL */}
       {type === 'marker' && (
-        <div>
-          <label htmlFor="markerImageUrl" className="block text-sm font-medium text-gray-700 mb-1">
-            マーカー画像URL
-          </label>
-          <input
-            id="markerImageUrl"
-            name="markerImageUrl"
-            type="text"
-            defaultValue={defaultValues?.markerImageUrl ?? ''}
-            placeholder="空欄の場合、自動でQRコードが設定されます"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            空欄にすると /api/qr/&#123;id&#125; のQRコードが自動設定されます
-          </p>
+        <div className="space-y-3">
+          <div>
+            <label htmlFor="markerImageUrl" className="block text-sm font-medium text-gray-700 mb-1">
+              マーカー画像URL
+            </label>
+            <input
+              id="markerImageUrl"
+              name="markerImageUrl"
+              type="text"
+              value={markerImageUrl}
+              onChange={(e) => setMarkerImageUrl(e.target.value)}
+              placeholder="空欄の場合、自動でQRコードが設定されます"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              空欄にすると /api/qr/&#123;id&#125; のQRコードが自動設定されます
+            </p>
+          </div>
+
+          {/* Preview */}
+          {(markerImageUrl || checkpointId) && (
+            <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+              <p className="text-xs text-gray-500 mb-2">プレビュー</p>
+              <MarkerImagePreview
+                url={markerImageUrl || `/api/qr/${checkpointId}`}
+                filename={checkpointId ? `qr-${checkpointId}` : 'marker-image'}
+              />
+            </div>
+          )}
         </div>
       )}
 

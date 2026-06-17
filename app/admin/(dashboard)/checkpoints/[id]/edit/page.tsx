@@ -37,6 +37,7 @@ export default async function EditCheckpointPage({
           passcode: checkpoint.passcode,
         }}
         isEditing
+        checkpointId={checkpoint.id}
       />
     </div>
   );
