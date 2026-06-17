@@ -8,6 +8,7 @@ import StampCard from './StampCard';
 
 type Props = {
   checkpoints: Checkpoint[];
+  siteTitle: string;
 };
 
 const CONDITION_ICON: Record<string, string> = { gps: '📡', marker: '📷', passcode: '🔑' };
@@ -17,7 +18,7 @@ const CONDITION_LABEL: Record<string, string> = {
   passcode: '合言葉を入力',
 };
 
-export default function StampRallyHome({ checkpoints }: Props) {
+export default function StampRallyHome({ checkpoints, siteTitle }: Props) {
   const router = useRouter();
   const { stamps, hasStamp, clearAll, ready } = useStamps();
   const [selected, setSelected] = useState<Checkpoint | null>(null);
@@ -34,7 +35,7 @@ export default function StampRallyHome({ checkpoints }: Props) {
   return (
     <div className="min-h-screen theme-bg-light">
       <header className="theme-bg text-white px-4 py-5 text-center shadow-md">
-        <h1 className="text-2xl font-bold tracking-wide">スタンプラリー</h1>
+        <h1 className="text-2xl font-bold tracking-wide">{siteTitle}</h1>
         <p className="theme-text-muted text-sm mt-1">
           {ready
             ? `${collectedCount} / ${checkpoints.length} スタンプ獲得`
