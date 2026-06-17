@@ -10,6 +10,13 @@ type Props = {
   checkpoints: Checkpoint[];
 };
 
+const CONDITION_ICON: Record<string, string> = { gps: '📡', marker: '📷', passcode: '🔑' };
+const CONDITION_LABEL: Record<string, string> = {
+  gps: 'GPS で現在地を確認',
+  marker: 'カメラでマーカーをスキャン',
+  passcode: '合言葉を入力',
+};
+
 export default function StampRallyHome({ checkpoints }: Props) {
   const router = useRouter();
   const { stamps, hasStamp, clearAll, ready } = useStamps();
@@ -20,13 +27,7 @@ export default function StampRallyHome({ checkpoints }: Props) {
 
   function handleConfirm() {
     if (!selected) return;
-    if (selected.type === 'gps') {
-      router.push(`/checkin/gps?id=${selected.id}`);
-    } else if (selected.type === 'passcode') {
-      router.push(`/checkin/passcode?id=${selected.id}`);
-    } else {
-      router.push('/checkin/camera');
-    }
+    router.push(`/checkin/${selected.id}`);
     setSelected(null);
   }
 
@@ -94,17 +95,21 @@ export default function StampRallyHome({ checkpoints }: Props) {
           >
             <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
             <div className="text-center mb-5">
-              <div className="text-4xl mb-2">
-                {selected.type === 'gps' ? '📡' : selected.type === 'passcode' ? '🔑' : '📷'}
+              <h2 className="text-lg font-bold text-gray-800 mb-3">{selected.title}</h2>
+              <div className="space-y-2">
+                {selected.conditions.map((c, i) => (
+                  <div key={c.id} className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2">
+                    <span className="text-base">{CONDITION_ICON[c.type] ?? '❓'}</span>
+                    <span>{CONDITION_LABEL[c.type] ?? c.type}</span>
+                    {selected.conditions.length > 1 && (
+                      <span className="ml-auto text-xs text-gray-400">条件{i + 1}</span>
+                    )}
+                  </div>
+                ))}
               </div>
-              <h2 className="text-lg font-bold text-gray-800">{selected.title}</h2>
-              <p className="text-sm text-gray-400 mt-1">
-                {selected.type === 'gps'
-                  ? 'GPS で現在地を確認してチェックインします'
-                  : selected.type === 'passcode'
-                  ? '合言葉を入力してチェックインします'
-                  : 'カメラでマーカーをスキャンしてチェックインします'}
-              </p>
+              {selected.conditions.length > 1 && (
+                <p className="text-xs text-gray-400 mt-3">すべての条件を満たすとスタンプ獲得</p>
+              )}
             </div>
             <button
               onClick={handleConfirm}

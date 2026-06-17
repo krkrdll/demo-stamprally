@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import CheckpointForm from '@/components/admin/CheckpointForm';
 import { updateCheckpoint } from '@/lib/actions/checkpoints';
-import prisma from '@/lib/prisma';
+import { getCheckpointById } from '@/lib/checkpoints';
 
 export default async function EditCheckpointPage({
   params,
@@ -10,7 +10,7 @@ export default async function EditCheckpointPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const checkpoint = await prisma.checkpoint.findUnique({ where: { id } });
+  const checkpoint = await getCheckpointById(id);
   if (!checkpoint) notFound();
 
   const action = updateCheckpoint.bind(null, id);
@@ -28,13 +28,9 @@ export default async function EditCheckpointPage({
       <CheckpointForm
         action={action}
         defaultValues={{
-          type: checkpoint.type as 'gps' | 'marker' | 'passcode',
           title: checkpoint.title,
           description: checkpoint.description,
-          lat: checkpoint.lat,
-          lng: checkpoint.lng,
-          markerImageUrl: checkpoint.markerImageUrl,
-          passcode: checkpoint.passcode,
+          conditions: checkpoint.conditions,
         }}
         isEditing
         checkpointId={checkpoint.id}

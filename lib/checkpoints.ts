@@ -1,63 +1,69 @@
 import prisma from './prisma';
-import type { Checkpoint, GpsCheckpoint, MarkerCheckpoint } from './types';
+import type { Checkpoint, CheckpointCondition } from './types';
 
-type Row = {
+type ConditionRow = {
   id: string;
   type: string;
   lat: number | null;
   lng: number | null;
   markerImageUrl: string | null;
   passcode: string | null;
-  title: string;
-  description: string | null;
+  sortOrder: number;
 };
 
-function toCheckpoint(row: Row): Checkpoint {
+type Row = {
+  id: string;
+  title: string;
+  description: string | null;
+  conditions: ConditionRow[];
+};
+
+function toCondition(row: ConditionRow): CheckpointCondition {
   if (row.type === 'gps') {
-    return {
-      id: row.id,
-      type: 'gps',
-      lat: row.lat!,
-      lng: row.lng!,
-      title: row.title,
-      description: row.description ?? undefined,
-    };
+    return { id: row.id, type: 'gps', lat: row.lat!, lng: row.lng! };
   }
   if (row.type === 'passcode') {
-    return {
-      id: row.id,
-      type: 'passcode',
-      passcode: row.passcode!,
-      title: row.title,
-      description: row.description ?? undefined,
-    };
+    return { id: row.id, type: 'passcode', passcode: row.passcode! };
   }
+  return { id: row.id, type: 'marker', markerImageUrl: row.markerImageUrl! };
+}
+
+function toCheckpoint(row: Row): Checkpoint {
   return {
     id: row.id,
-    type: 'marker',
-    markerImageUrl: row.markerImageUrl!,
     title: row.title,
     description: row.description ?? undefined,
+    conditions: row.conditions
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map(toCondition),
   };
 }
 
+const includeConditions = {
+  conditions: { orderBy: { sortOrder: 'asc' as const } },
+};
+
 export async function getAllCheckpoints(): Promise<Checkpoint[]> {
-  const rows = await prisma.checkpoint.findMany({ orderBy: [{ order: 'asc' }, { createdAt: 'asc' }] });
+  const rows = await prisma.checkpoint.findMany({
+    orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+    include: includeConditions,
+  });
   return rows.map(toCheckpoint);
 }
 
-export async function getGpsCheckpoints(): Promise<GpsCheckpoint[]> {
-  const rows = await prisma.checkpoint.findMany({
-    where: { type: 'gps' },
-    orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+export async function getCheckpointById(id: string): Promise<Checkpoint | null> {
+  const row = await prisma.checkpoint.findUnique({
+    where: { id },
+    include: includeConditions,
   });
-  return rows.map(toCheckpoint) as GpsCheckpoint[];
+  return row ? toCheckpoint(row) : null;
 }
 
-export async function getMarkerCheckpoints(): Promise<MarkerCheckpoint[]> {
+export async function getMarkerCheckpoints(): Promise<Checkpoint[]> {
   const rows = await prisma.checkpoint.findMany({
-    where: { type: 'marker' },
+    where: { conditions: { some: { type: 'marker' } } },
     orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+    include: includeConditions,
   });
-  return rows.map(toCheckpoint) as MarkerCheckpoint[];
+  return rows.map(toCheckpoint);
 }

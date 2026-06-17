@@ -10,46 +10,58 @@ async function requireAdmin() {
   if (!ok) throw new Error('Unauthorized');
 }
 
+type ConditionInput = {
+  type: 'gps' | 'marker' | 'passcode';
+  lat?: number;
+  lng?: number;
+  markerImageUrl?: string;
+  passcode?: string;
+};
+
+function parseConditions(formData: FormData): ConditionInput[] {
+  const raw = formData.get('conditions') as string;
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw) as ConditionInput[];
+  } catch {
+    return [];
+  }
+}
+
 export async function createCheckpoint(formData: FormData) {
   await requireAdmin();
 
-  const type = formData.get('type') as string;
   const title = (formData.get('title') as string).trim();
   const description = (formData.get('description') as string)?.trim() || null;
+  const conditions = parseConditions(formData);
+
+  if (conditions.length === 0) throw new Error('条件が必要です');
 
   const id = crypto.randomUUID();
   const count = await prisma.checkpoint.count();
 
-  if (type === 'gps') {
-    await prisma.checkpoint.create({
-      data: {
-        id,
-        type,
-        order: count,
-        title,
-        description,
-        lat: parseFloat(formData.get('lat') as string),
-        lng: parseFloat(formData.get('lng') as string),
+  await prisma.checkpoint.create({
+    data: {
+      id,
+      order: count,
+      title,
+      description,
+      conditions: {
+        create: conditions.map((c, i) => ({
+          id: crypto.randomUUID(),
+          type: c.type,
+          lat: c.type === 'gps' ? c.lat : null,
+          lng: c.type === 'gps' ? c.lng : null,
+          passcode: c.type === 'passcode' ? c.passcode : null,
+          markerImageUrl:
+            c.type === 'marker'
+              ? (c.markerImageUrl?.trim() || `/api/qr/${id}`)
+              : null,
+          sortOrder: i,
+        })),
       },
-    });
-  } else if (type === 'passcode') {
-    const passcode = (formData.get('passcode') as string).trim();
-    await prisma.checkpoint.create({
-      data: { id, type, order: count, title, description, passcode },
-    });
-  } else {
-    const customUrl = (formData.get('markerImageUrl') as string)?.trim();
-    await prisma.checkpoint.create({
-      data: {
-        id,
-        type,
-        order: count,
-        title,
-        description,
-        markerImageUrl: customUrl || `/api/qr/${id}`,
-      },
-    });
-  }
+    },
+  });
 
   revalidatePath('/admin');
   revalidatePath('/');
@@ -59,23 +71,36 @@ export async function createCheckpoint(formData: FormData) {
 export async function updateCheckpoint(id: string, formData: FormData) {
   await requireAdmin();
 
-  const type = formData.get('type') as string;
   const title = (formData.get('title') as string).trim();
   const description = (formData.get('description') as string)?.trim() || null;
+  const conditions = parseConditions(formData);
 
-  const data: Record<string, unknown> = { title, description };
+  if (conditions.length === 0) throw new Error('条件が必要です');
 
-  if (type === 'gps') {
-    data.lat = parseFloat(formData.get('lat') as string);
-    data.lng = parseFloat(formData.get('lng') as string);
-  } else if (type === 'passcode') {
-    data.passcode = (formData.get('passcode') as string).trim();
-  } else {
-    const customUrl = (formData.get('markerImageUrl') as string)?.trim();
-    data.markerImageUrl = customUrl || `/api/qr/${id}`;
-  }
-
-  await prisma.checkpoint.update({ where: { id }, data });
+  await prisma.$transaction([
+    prisma.checkpointCondition.deleteMany({ where: { checkpointId: id } }),
+    prisma.checkpoint.update({
+      where: { id },
+      data: {
+        title,
+        description,
+        conditions: {
+          create: conditions.map((c, i) => ({
+            id: crypto.randomUUID(),
+            type: c.type,
+            lat: c.type === 'gps' ? c.lat : null,
+            lng: c.type === 'gps' ? c.lng : null,
+            passcode: c.type === 'passcode' ? c.passcode : null,
+            markerImageUrl:
+              c.type === 'marker'
+                ? (c.markerImageUrl?.trim() || `/api/qr/${id}`)
+                : null,
+            sortOrder: i,
+          })),
+        },
+      },
+    }),
+  ]);
 
   revalidatePath('/admin');
   revalidatePath('/');
@@ -106,7 +131,6 @@ export async function moveCheckpoint(id: string, direction: 'up' | 'down') {
   const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
   if (targetIdx < 0 || targetIdx >= all.length) return;
 
-  // 位置番号で swap（order 値の重複を気にしない絶対位置指定）
   await Promise.all([
     prisma.checkpoint.update({ where: { id: all[idx].id }, data: { order: targetIdx } }),
     prisma.checkpoint.update({ where: { id: all[targetIdx].id }, data: { order: idx } }),

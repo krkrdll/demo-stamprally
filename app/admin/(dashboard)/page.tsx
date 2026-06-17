@@ -6,8 +6,23 @@ import ConfirmDeleteForm from '@/components/admin/ConfirmDeleteForm';
 import ReorderButtons from '@/components/admin/ReorderButtons';
 import MarkerImagePreview from '@/components/admin/MarkerImagePreview';
 
+const CONDITION_LABEL: Record<string, string> = {
+  gps: '📡 GPS',
+  marker: '📷 マーカー',
+  passcode: '🔑 合言葉',
+};
+
+const CONDITION_COLOR: Record<string, string> = {
+  gps: 'bg-blue-100 text-blue-700',
+  marker: 'bg-green-100 text-green-700',
+  passcode: 'bg-purple-100 text-purple-700',
+};
+
 export default async function AdminPage() {
-  const checkpoints = await prisma.checkpoint.findMany({ orderBy: [{ order: 'asc' }, { createdAt: 'asc' }] });
+  const checkpoints = await prisma.checkpoint.findMany({
+    orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+    include: { conditions: { orderBy: { sortOrder: 'asc' } } },
+  });
 
   return (
     <div>
@@ -38,7 +53,7 @@ export default async function AdminPage() {
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
                 <th className="px-3 py-3 text-left font-medium text-gray-500">順序</th>
-                <th className="px-5 py-3 text-left font-medium text-gray-500">種別</th>
+                <th className="px-5 py-3 text-left font-medium text-gray-500">条件</th>
                 <th className="px-5 py-3 text-left font-medium text-gray-500">タイトル</th>
                 <th className="px-5 py-3 text-left font-medium text-gray-500 hidden md:table-cell">説明</th>
                 <th className="px-5 py-3 text-left font-medium text-gray-500 hidden lg:table-cell">詳細情報</th>
@@ -52,33 +67,41 @@ export default async function AdminPage() {
                     <ReorderButtons id={cp.id} isFirst={i === 0} isLast={i === checkpoints.length - 1} />
                   </td>
                   <td className="px-5 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
-                        cp.type === 'gps'
-                          ? 'bg-blue-100 text-blue-700'
-                          : cp.type === 'passcode'
-                          ? 'bg-purple-100 text-purple-700'
-                          : 'bg-green-100 text-green-700'
-                      }`}
-                    >
-                      {cp.type === 'gps' ? '📡 GPS' : cp.type === 'passcode' ? '🔑 合言葉' : '📷 マーカー'}
-                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {cp.conditions.map(c => (
+                        <span
+                          key={c.id}
+                          className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${CONDITION_COLOR[c.type] ?? 'bg-gray-100 text-gray-600'}`}
+                        >
+                          {CONDITION_LABEL[c.type] ?? c.type}
+                        </span>
+                      ))}
+                      {cp.conditions.length === 0 && (
+                        <span className="text-xs text-gray-300">—</span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-5 py-4 font-medium text-gray-800">{cp.title}</td>
                   <td className="px-5 py-4 text-gray-400 hidden md:table-cell">
                     {cp.description ?? '—'}
                   </td>
                   <td className="px-5 py-4 text-gray-400 font-mono text-xs hidden lg:table-cell">
-                    {cp.type === 'gps' ? (
-                      `${cp.lat?.toFixed(4)}, ${cp.lng?.toFixed(4)}`
-                    ) : cp.type === 'passcode' ? (
-                      cp.passcode
-                    ) : (
-                      <MarkerImagePreview
-                        url={cp.markerImageUrl ?? `/api/qr/${cp.id}`}
-                        filename={`qr-${cp.id}`}
-                      />
-                    )}
+                    <div className="space-y-1">
+                      {cp.conditions.map(c => (
+                        <div key={c.id}>
+                          {c.type === 'gps' ? (
+                            `${c.lat?.toFixed(4)}, ${c.lng?.toFixed(4)}`
+                          ) : c.type === 'passcode' ? (
+                            c.passcode
+                          ) : (
+                            <MarkerImagePreview
+                              url={c.markerImageUrl ?? `/api/qr/${cp.id}`}
+                              filename={`qr-${cp.id}`}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </td>
                   <td className="px-5 py-4 text-right">
                     <div className="flex items-center justify-end gap-3">

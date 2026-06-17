@@ -6,7 +6,12 @@ type Props = {
   collectedAt?: string;
 };
 
+const CONDITION_ICON: Record<string, string> = { gps: '📡', marker: '📷', passcode: '🔑' };
+
 export default function StampCard({ checkpoint, collected, collectedAt }: Props) {
+  const markerCondition = checkpoint.conditions.find(c => c.type === 'marker');
+  const conditionTypes = checkpoint.conditions.map(c => c.type);
+
   return (
     <div
       className={`rounded-xl border-2 p-3 flex flex-col items-center text-center transition-all ${
@@ -17,19 +22,17 @@ export default function StampCard({ checkpoint, collected, collectedAt }: Props)
     >
       {collected ? (
         <div className="text-5xl mb-2">🟠</div>
-      ) : checkpoint.type === 'marker' ? (
+      ) : markerCondition && markerCondition.type === 'marker' ? (
         <img
-          src={checkpoint.markerImageUrl}
+          src={markerCondition.markerImageUrl}
           alt={`${checkpoint.title}のQRコード`}
           className="w-16 h-16 mb-2 rounded border border-gray-100"
         />
-      ) : checkpoint.type === 'passcode' ? (
-        <div className="w-16 h-16 mb-2 rounded-full border-4 border-dashed border-purple-200 flex items-center justify-center text-purple-300 text-2xl">
-          🔑
-        </div>
       ) : (
-        <div className="w-16 h-16 mb-2 rounded-full border-4 border-dashed border-gray-200 flex items-center justify-center text-gray-300 text-2xl">
-          ○
+        <div className="w-16 h-16 mb-2 rounded-full border-4 border-dashed border-gray-200 flex items-center justify-center gap-0.5">
+          {conditionTypes.slice(0, 2).map((t, i) => (
+            <span key={i} className="text-lg leading-none">{CONDITION_ICON[t] ?? '❓'}</span>
+          ))}
         </div>
       )}
 
@@ -37,8 +40,10 @@ export default function StampCard({ checkpoint, collected, collectedAt }: Props)
         {checkpoint.title}
       </div>
 
-      <div className="text-xs text-gray-400 mt-1">
-        {checkpoint.type === 'gps' ? '📡 GPS' : checkpoint.type === 'passcode' ? '🔑 合言葉' : '📷 カメラ'}
+      <div className="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1 flex-wrap">
+        {conditionTypes.map((t, i) => (
+          <span key={i}>{CONDITION_ICON[t] ?? '❓'}</span>
+        ))}
       </div>
 
       {collected && collectedAt && (

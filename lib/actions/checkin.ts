@@ -2,8 +2,8 @@
 
 import prisma from '@/lib/prisma';
 
-export async function verifyPasscode(checkpointId: string, entered: string): Promise<boolean> {
-  const checkpoint = await prisma.checkpoint.findUnique({ where: { id: checkpointId } });
-  if (!checkpoint || checkpoint.type !== 'passcode' || !checkpoint.passcode) return false;
-  return checkpoint.passcode === entered.trim();
+export async function verifyPasscode(conditionId: string, entered: string): Promise<boolean> {
+  const condition = await prisma.checkpointCondition.findUnique({ where: { id: conditionId } });
+  if (!condition || condition.type !== 'passcode' || !condition.passcode) return false;
+  return condition.passcode === entered.trim();
 }

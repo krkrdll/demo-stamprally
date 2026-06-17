@@ -3,246 +3,298 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import MarkerImagePreview from './MarkerImagePreview';
+import type { CheckpointCondition } from '@/lib/types';
 
 const MapPickerModal = dynamic(() => import('./MapPickerModal'), { ssr: false });
 
-type CheckpointType = 'gps' | 'marker' | 'passcode';
-
-type DefaultValues = {
-  type: CheckpointType;
-  title: string;
-  description?: string | null;
-  lat?: number | null;
-  lng?: number | null;
-  markerImageUrl?: string | null;
-  passcode?: string | null;
-};
+type ConditionDraft =
+  | { type: 'gps'; lat: string; lng: string }
+  | { type: 'marker'; markerImageUrl: string }
+  | { type: 'passcode'; passcode: string };
 
 type Props = {
   action: (formData: FormData) => Promise<void>;
-  defaultValues?: DefaultValues;
+  defaultValues?: {
+    title: string;
+    description?: string | null;
+    conditions: CheckpointCondition[];
+  };
   isEditing?: boolean;
   checkpointId?: string;
 };
 
+function defaultDraft(): ConditionDraft {
+  return { type: 'gps', lat: '', lng: '' };
+}
+
+function fromExisting(c: CheckpointCondition): ConditionDraft {
+  if (c.type === 'gps') return { type: 'gps', lat: c.lat.toString(), lng: c.lng.toString() };
+  if (c.type === 'passcode') return { type: 'passcode', passcode: c.passcode };
+  return { type: 'marker', markerImageUrl: c.markerImageUrl };
+}
+
 export default function CheckpointForm({ action, defaultValues, isEditing, checkpointId }: Props) {
-  const [type, setType] = useState<CheckpointType>(defaultValues?.type ?? 'gps');
-  const [lat, setLat] = useState<string>(defaultValues?.lat?.toString() ?? '');
-  const [lng, setLng] = useState<string>(defaultValues?.lng?.toString() ?? '');
-  const [showMapPicker, setShowMapPicker] = useState(false);
-  const [markerImageUrl, setMarkerImageUrl] = useState<string>(defaultValues?.markerImageUrl ?? '');
+  const [conditions, setConditions] = useState<ConditionDraft[]>(
+    defaultValues?.conditions?.length
+      ? defaultValues.conditions.map(fromExisting)
+      : [defaultDraft()]
+  );
+  const [mapPickerFor, setMapPickerFor] = useState<number | null>(null);
+
+  function updateCondition(i: number, patch: Partial<ConditionDraft>) {
+    setConditions(prev => prev.map((c, idx) => idx === i ? { ...c, ...patch } as ConditionDraft : c));
+  }
+
+  function changeType(i: number, type: ConditionDraft['type']) {
+    if (type === 'gps') setConditions(prev => prev.map((c, idx) => idx === i ? { type: 'gps', lat: '', lng: '' } : c));
+    else if (type === 'passcode') setConditions(prev => prev.map((c, idx) => idx === i ? { type: 'passcode', passcode: '' } : c));
+    else setConditions(prev => prev.map((c, idx) => idx === i ? { type: 'marker', markerImageUrl: '' } : c));
+  }
+
+  function addCondition() {
+    setConditions(prev => [...prev, defaultDraft()]);
+  }
+
+  function removeCondition(i: number) {
+    setConditions(prev => prev.filter((_, idx) => idx !== i));
+  }
 
   function handleMapConfirm(newLat: number, newLng: number) {
-    setLat(newLat.toFixed(6));
-    setLng(newLng.toFixed(6));
-    setShowMapPicker(false);
+    if (mapPickerFor !== null) {
+      updateCondition(mapPickerFor, { lat: newLat.toFixed(6), lng: newLng.toFixed(6) } as Partial<ConditionDraft>);
+    }
+    setMapPickerFor(null);
   }
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const payload = conditions.map(c => {
+      if (c.type === 'gps') return { type: 'gps', lat: parseFloat(c.lat), lng: parseFloat(c.lng) };
+      if (c.type === 'passcode') return { type: 'passcode', passcode: c.passcode };
+      return { type: 'marker', markerImageUrl: c.markerImageUrl };
+    });
+    fd.set('conditions', JSON.stringify(payload));
+    e.preventDefault();
+    action(fd);
+  }
+
+  const typeLabel: Record<string, string> = { gps: '📡 GPS', marker: '📷 マーカー', passcode: '🔑 合言葉' };
+  const typeColors: Record<string, string> = {
+    gps: 'bg-blue-600 border-blue-600',
+    marker: 'bg-green-600 border-green-600',
+    passcode: 'bg-purple-600 border-purple-600',
+  };
+  const typeInactive: Record<string, string> = {
+    gps: 'hover:border-blue-300',
+    marker: 'hover:border-green-300',
+    passcode: 'hover:border-purple-300',
+  };
 
   return (
     <>
-      {showMapPicker && (
+      {mapPickerFor !== null && (
         <MapPickerModal
-          initialLat={lat ? parseFloat(lat) : null}
-          initialLng={lng ? parseFloat(lng) : null}
+          initialLat={conditions[mapPickerFor]?.type === 'gps' ? parseFloat((conditions[mapPickerFor] as {lat: string}).lat) || null : null}
+          initialLng={conditions[mapPickerFor]?.type === 'gps' ? parseFloat((conditions[mapPickerFor] as {lng: string}).lng) || null : null}
           onConfirm={handleMapConfirm}
-          onClose={() => setShowMapPicker(false)}
+          onClose={() => setMapPickerFor(null)}
         />
       )}
-    <form action={action} className="bg-white rounded-2xl shadow-sm p-6 space-y-5 max-w-lg">
-      <input type="hidden" name="type" value={type} />
 
-      {/* Type selector */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">種別</label>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            disabled={isEditing}
-            onClick={() => setType('gps')}
-            className={`flex-1 py-2.5 rounded-lg font-medium text-sm border-2 transition-all ${
-              type === 'gps'
-                ? 'bg-blue-600 border-blue-600 text-white'
-                : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300'
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            📡 GPS
-          </button>
-          <button
-            type="button"
-            disabled={isEditing}
-            onClick={() => setType('marker')}
-            className={`flex-1 py-2.5 rounded-lg font-medium text-sm border-2 transition-all ${
-              type === 'marker'
-                ? 'bg-green-600 border-green-600 text-white'
-                : 'bg-white border-gray-200 text-gray-600 hover:border-green-300'
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            📷 マーカー
-          </button>
-          <button
-            type="button"
-            disabled={isEditing}
-            onClick={() => setType('passcode')}
-            className={`flex-1 py-2.5 rounded-lg font-medium text-sm border-2 transition-all ${
-              type === 'passcode'
-                ? 'bg-purple-600 border-purple-600 text-white'
-                : 'bg-white border-gray-200 text-gray-600 hover:border-purple-300'
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            🔑 合言葉
-          </button>
-        </div>
-        {isEditing && (
-          <p className="text-xs text-gray-400 mt-1">種別は変更できません</p>
-        )}
-      </div>
-
-      {/* Title */}
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-          タイトル <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="title"
-          name="title"
-          type="text"
-          required
-          defaultValue={defaultValues?.title}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
-        />
-      </div>
-
-      {/* Description */}
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-          説明
-        </label>
-        <input
-          id="description"
-          name="description"
-          type="text"
-          defaultValue={defaultValues?.description ?? ''}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
-        />
-      </div>
-
-      {/* GPS fields */}
-      {type === 'gps' && (
-        <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="lat" className="block text-sm font-medium text-gray-700 mb-1">
-                緯度 (lat) <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="lat"
-                name="lat"
-                type="number"
-                step="any"
-                required
-                value={lat}
-                onChange={(e) => setLat(e.target.value)}
-                placeholder="35.6762"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm font-mono"
-              />
-            </div>
-            <div>
-              <label htmlFor="lng" className="block text-sm font-medium text-gray-700 mb-1">
-                経度 (lng) <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="lng"
-                name="lng"
-                type="number"
-                step="any"
-                required
-                value={lng}
-                onChange={(e) => setLng(e.target.value)}
-                placeholder="139.6503"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm font-mono"
-              />
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowMapPicker(true)}
-            className="w-full py-2 border-2 border-dashed border-blue-300 text-blue-600 hover:border-blue-400 hover:bg-blue-50 rounded-lg text-sm font-medium transition-all"
-          >
-            🗺️ 地図で位置を選択する
-          </button>
-        </div>
-      )}
-
-      {/* Marker URL */}
-      {type === 'marker' && (
-        <div className="space-y-3">
-          <div>
-            <label htmlFor="markerImageUrl" className="block text-sm font-medium text-gray-700 mb-1">
-              マーカー画像URL
-            </label>
-            <input
-              id="markerImageUrl"
-              name="markerImageUrl"
-              type="text"
-              value={markerImageUrl}
-              onChange={(e) => setMarkerImageUrl(e.target.value)}
-              placeholder="空欄の場合、自動でQRコードが設定されます"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
-            />
-            <p className="text-xs text-gray-400 mt-1">
-              空欄にすると /api/qr/&#123;id&#125; のQRコードが自動設定されます
-            </p>
-          </div>
-
-          {/* Preview */}
-          {(markerImageUrl || checkpointId) && (
-            <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-              <p className="text-xs text-gray-500 mb-2">プレビュー</p>
-              <MarkerImagePreview
-                url={markerImageUrl || `/api/qr/${checkpointId}`}
-                filename={checkpointId ? `qr-${checkpointId}` : 'marker-image'}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Passcode */}
-      {type === 'passcode' && (
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm p-6 space-y-5 max-w-lg">
+        {/* Title */}
         <div>
-          <label htmlFor="passcode" className="block text-sm font-medium text-gray-700 mb-1">
-            合言葉 <span className="text-red-500">*</span>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+            タイトル <span className="text-red-500">*</span>
           </label>
           <input
-            id="passcode"
-            name="passcode"
+            id="title"
+            name="title"
             type="text"
             required
-            defaultValue={defaultValues?.passcode ?? ''}
-            placeholder="例: さくら"
+            defaultValue={defaultValues?.title}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
           />
-          <p className="text-xs text-gray-400 mt-1">
-            参加者がこの合言葉を入力するとスタンプを獲得できます
-          </p>
         </div>
-      )}
 
-      <div className="flex gap-3 pt-2">
-        <button
-          type="submit"
-          className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-sm"
-        >
-          {isEditing ? '更新する' : '作成する'}
-        </button>
-        <a
-          href="/admin"
-          className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium px-6 py-2.5 rounded-lg transition-colors text-sm"
-        >
-          キャンセル
-        </a>
-      </div>
-    </form>
+        {/* Description */}
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            説明
+          </label>
+          <input
+            id="description"
+            name="description"
+            type="text"
+            defaultValue={defaultValues?.description ?? ''}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+          />
+        </div>
+
+        {/* Conditions */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium text-gray-700">
+              チェックイン条件 <span className="text-red-500">*</span>
+            </label>
+            <span className="text-xs text-gray-400">すべての条件を満たすとスタンプ獲得</span>
+          </div>
+
+          {conditions.map((cond, i) => (
+            <div key={i} className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  条件 {i + 1}
+                </span>
+                {conditions.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeCondition(i)}
+                    className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                  >
+                    削除
+                  </button>
+                )}
+              </div>
+
+              {/* Type selector */}
+              <div className="flex gap-2">
+                {(['gps', 'marker', 'passcode'] as const).map(t => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => changeType(i, t)}
+                    className={`flex-1 py-2 rounded-lg font-medium text-xs border-2 transition-all ${
+                      cond.type === t
+                        ? `${typeColors[t]} text-white`
+                        : `bg-white border-gray-200 text-gray-600 ${typeInactive[t]}`
+                    }`}
+                  >
+                    {typeLabel[t]}
+                  </button>
+                ))}
+              </div>
+
+              {/* GPS fields */}
+              {cond.type === 'gps' && (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        緯度 (lat) <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        required
+                        value={cond.lat}
+                        onChange={e => updateCondition(i, { lat: e.target.value } as Partial<ConditionDraft>)}
+                        placeholder="35.6762"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        経度 (lng) <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        required
+                        value={cond.lng}
+                        onChange={e => updateCondition(i, { lng: e.target.value } as Partial<ConditionDraft>)}
+                        placeholder="139.6503"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setMapPickerFor(i)}
+                    className="w-full py-2 border-2 border-dashed border-blue-300 text-blue-600 hover:border-blue-400 hover:bg-blue-50 rounded-lg text-xs font-medium transition-all"
+                  >
+                    🗺️ 地図で位置を選択する
+                  </button>
+                </div>
+              )}
+
+              {/* Marker fields */}
+              {cond.type === 'marker' && (
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      マーカー画像URL
+                    </label>
+                    <input
+                      type="text"
+                      value={cond.markerImageUrl}
+                      onChange={e => updateCondition(i, { markerImageUrl: e.target.value } as Partial<ConditionDraft>)}
+                      placeholder="空欄の場合、自動でQRコードが設定されます"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-xs"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      空欄にすると /api/qr/&#123;id&#125; のQRコードが自動設定されます
+                    </p>
+                  </div>
+                  {(cond.markerImageUrl || checkpointId) && (
+                    <div className="border border-gray-200 rounded-lg p-3 bg-white">
+                      <p className="text-xs text-gray-500 mb-2">プレビュー</p>
+                      <MarkerImagePreview
+                        url={cond.markerImageUrl || `/api/qr/${checkpointId}`}
+                        filename={checkpointId ? `qr-${checkpointId}` : 'marker-image'}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Passcode fields */}
+              {cond.type === 'passcode' && (
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    合言葉 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={cond.passcode}
+                    onChange={e => updateCondition(i, { passcode: e.target.value } as Partial<ConditionDraft>)}
+                    placeholder="例: さくら"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    参加者がこの合言葉を入力するとこの条件を達成できます
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={addCondition}
+            className="w-full py-2.5 border-2 border-dashed border-amber-300 text-amber-600 hover:border-amber-400 hover:bg-amber-50 rounded-xl text-sm font-medium transition-all"
+          >
+            + 条件を追加
+          </button>
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <button
+            type="submit"
+            className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-sm"
+          >
+            {isEditing ? '更新する' : '作成する'}
+          </button>
+          <a
+            href="/admin"
+            className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium px-6 py-2.5 rounded-lg transition-colors text-sm"
+          >
+            キャンセル
+          </a>
+        </div>
+      </form>
     </>
   );
 }
