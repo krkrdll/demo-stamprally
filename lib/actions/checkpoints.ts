@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { promises as fs } from 'fs';
+import path from 'path';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 
@@ -28,6 +30,27 @@ function parseConditions(formData: FormData): ConditionInput[] {
   }
 }
 
+const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/checkpoints');
+const ALLOWED_EXTS = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif']);
+
+async function saveImage(file: File, checkpointId: string): Promise<string> {
+  await fs.mkdir(UPLOAD_DIR, { recursive: true });
+  const ext = (file.name.split('.').pop() ?? 'jpg').toLowerCase();
+  const safeExt = ALLOWED_EXTS.has(ext) ? ext : 'jpg';
+  const filename = `${checkpointId}.${safeExt}`;
+  const bytes = await file.arrayBuffer();
+  await fs.writeFile(path.join(UPLOAD_DIR, filename), Buffer.from(bytes));
+  return `/uploads/checkpoints/${filename}`;
+}
+
+async function deleteImage(imageUrl: string) {
+  try {
+    await fs.unlink(path.join(process.cwd(), 'public', imageUrl));
+  } catch {
+    // Ignore if file doesn't exist
+  }
+}
+
 export async function createCheckpoint(formData: FormData) {
   await requireAdmin();
 
@@ -40,12 +63,19 @@ export async function createCheckpoint(formData: FormData) {
   const id = crypto.randomUUID();
   const count = await prisma.checkpoint.count();
 
+  const imageFile = formData.get('image') as File | null;
+  let imageUrl: string | null = null;
+  if (imageFile && imageFile.size > 0) {
+    imageUrl = await saveImage(imageFile, id);
+  }
+
   await prisma.checkpoint.create({
     data: {
       id,
       order: count,
       title,
       description,
+      imageUrl,
       conditions: {
         create: conditions.map((c, i) => ({
           id: crypto.randomUUID(),
@@ -77,6 +107,20 @@ export async function updateCheckpoint(id: string, formData: FormData) {
 
   if (conditions.length === 0) throw new Error('条件が必要です');
 
+  const existingImageUrl = (formData.get('existingImageUrl') as string) || null;
+  const deleteImageFlag = formData.get('deleteImage') === 'true';
+  const imageFile = formData.get('image') as File | null;
+
+  let imageUrl: string | null = existingImageUrl;
+
+  if (deleteImageFlag) {
+    if (existingImageUrl) await deleteImage(existingImageUrl);
+    imageUrl = null;
+  } else if (imageFile && imageFile.size > 0) {
+    if (existingImageUrl) await deleteImage(existingImageUrl);
+    imageUrl = await saveImage(imageFile, id);
+  }
+
   await prisma.$transaction([
     prisma.checkpointCondition.deleteMany({ where: { checkpointId: id } }),
     prisma.checkpoint.update({
@@ -84,6 +128,7 @@ export async function updateCheckpoint(id: string, formData: FormData) {
       data: {
         title,
         description,
+        imageUrl,
         conditions: {
           create: conditions.map((c, i) => ({
             id: crypto.randomUUID(),
@@ -111,6 +156,10 @@ export async function deleteCheckpoint(formData: FormData) {
   await requireAdmin();
 
   const id = formData.get('id') as string;
+
+  const cp = await prisma.checkpoint.findUnique({ where: { id }, select: { imageUrl: true } });
+  if (cp?.imageUrl) await deleteImage(cp.imageUrl);
+
   await prisma.checkpoint.delete({ where: { id } });
 
   revalidatePath('/admin');

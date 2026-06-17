@@ -31,6 +31,7 @@ export default async function EditCheckpointPage({
         defaultValues={{
           title: checkpoint.title,
           description: checkpoint.description,
+          imageUrl: checkpoint.imageUrl,
           conditions: checkpoint.conditions,
         }}
         isEditing

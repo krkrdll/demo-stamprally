@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import MarkerImagePreview from './MarkerImagePreview';
 import type { CheckpointCondition } from '@/lib/types';
-import { MdGpsFixed, MdQrCodeScanner, MdKey, MdMap, MdAdd, MdDelete } from 'react-icons/md';
+import { MdGpsFixed, MdQrCodeScanner, MdKey, MdMap, MdAdd, MdDelete, MdImage, MdClose } from 'react-icons/md';
 
 const MapPickerModal = dynamic(() => import('./MapPickerModal'), { ssr: false });
 
@@ -18,6 +18,7 @@ type Props = {
   defaultValues?: {
     title: string;
     description?: string | null;
+    imageUrl?: string | null;
     conditions: CheckpointCondition[];
   };
   isEditing?: boolean;
@@ -41,6 +42,9 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
       : [defaultDraft()]
   );
   const [mapPickerFor, setMapPickerFor] = useState<number | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(defaultValues?.imageUrl ?? null);
+  const [deleteImage, setDeleteImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function updateCondition(i: number, patch: Partial<ConditionDraft>) {
     setConditions(prev => prev.map((c, idx) => idx === i ? { ...c, ...patch } as ConditionDraft : c));
@@ -67,6 +71,20 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
     setMapPickerFor(null);
   }
 
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+      setDeleteImage(false);
+    }
+  }
+
+  function handleRemoveImage() {
+    setImagePreview(null);
+    setDeleteImage(true);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     const form = e.currentTarget;
     const fd = new FormData(form);
@@ -76,6 +94,8 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
       return { type: 'marker', markerImageUrl: c.markerImageUrl };
     });
     fd.set('conditions', JSON.stringify(payload));
+    fd.set('deleteImage', deleteImage ? 'true' : 'false');
+    if (defaultValues?.imageUrl) fd.set('existingImageUrl', defaultValues.imageUrl);
     e.preventDefault();
     action(fd);
   }
@@ -135,6 +155,44 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
             defaultValue={defaultValues?.description ?? ''}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
           />
+        </div>
+
+        {/* Image */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            チェックポイント画像
+          </label>
+          {/* Always keep the file input in the DOM so FormData includes it on submit */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            name="image"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            onChange={handleImageChange}
+          />
+          {imagePreview ? (
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-50 group">
+              <img src={imagePreview} alt="プレビュー" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-full p-1 transition-colors"
+                title="画像を削除"
+              >
+                <MdClose size={16} />
+              </button>
+            </div>
+          ) : (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="flex flex-col items-center justify-center w-full aspect-video border-2 border-dashed border-gray-200 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+            >
+              <MdImage size={32} className="text-gray-300 mb-1" />
+              <span className="text-xs text-gray-400">クリックして画像を選択</span>
+              <span className="text-xs text-gray-300 mt-0.5">JPG / PNG / WebP</span>
+            </div>
+          )}
         </div>
 
         {/* Conditions */}

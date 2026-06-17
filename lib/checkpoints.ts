@@ -15,6 +15,7 @@ type Row = {
   id: string;
   title: string;
   description: string | null;
+  imageUrl: string | null;
   conditions: ConditionRow[];
 };
 
@@ -33,6 +34,7 @@ function toCheckpoint(row: Row): Checkpoint {
     id: row.id,
     title: row.title,
     description: row.description ?? undefined,
+    imageUrl: row.imageUrl ?? undefined,
     conditions: row.conditions
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map(toCondition),

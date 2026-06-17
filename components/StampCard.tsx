@@ -1,5 +1,5 @@
 import type { Checkpoint } from '@/lib/types';
-import { MdGpsFixed, MdQrCodeScanner, MdKey, MdHelp, MdAdjust } from 'react-icons/md';
+import { MdGpsFixed, MdQrCodeScanner, MdKey, MdHelp, MdAdjust, MdStarOutline } from 'react-icons/md';
 
 type Props = {
   checkpoint: Checkpoint;
@@ -13,49 +13,48 @@ const CONDITION_ICON: Record<string, React.ReactNode> = {
   passcode: <MdKey />,
 };
 
-export default function StampCard({ checkpoint, collected, collectedAt }: Props) {
-  const markerCondition = checkpoint.conditions.find(c => c.type === 'marker');
+export default function StampCard({ checkpoint, collected }: Props) {
   const conditionTypes = checkpoint.conditions.map(c => c.type);
 
   return (
     <div
-      className={`rounded-xl border-2 p-3 flex flex-col items-center text-center transition-all ${
-        collected
-          ? 'theme-border theme-bg-light shadow-md'
-          : 'border-gray-200 bg-white'
+      className={`rounded-xl border-2 overflow-hidden aspect-square relative transition-all ${
+        collected ? 'theme-border shadow-md' : 'border-gray-200'
       }`}
     >
-      {collected ? (
-        <MdAdjust size={48} className="mb-2 theme-text" />
-      ) : markerCondition && markerCondition.type === 'marker' ? (
+      {/* Background */}
+      {checkpoint.imageUrl ? (
         <img
-          src={markerCondition.markerImageUrl}
-          alt={`${checkpoint.title}のQRコード`}
-          className="w-16 h-16 mb-2 rounded border border-gray-100"
+          src={checkpoint.imageUrl}
+          alt={checkpoint.title}
+          className={`absolute inset-0 w-full h-full object-cover ${!collected ? 'opacity-30 grayscale' : ''}`}
         />
       ) : (
-        <div className="w-16 h-16 mb-2 rounded-full border-4 border-dashed border-gray-200 flex items-center justify-center gap-0.5 text-gray-300 text-xl">
-          {conditionTypes.slice(0, 2).map((t, i) => (
-            <span key={i}>{CONDITION_ICON[t] ?? <MdHelp />}</span>
-          ))}
+        <div className={`absolute inset-0 flex items-center justify-center ${collected ? 'theme-bg-light' : 'bg-gray-500'}`}>
+          {collected && <MdAdjust size={40} className="theme-text opacity-70" />}
         </div>
       )}
 
-      <div className="text-xs font-semibold text-gray-800 leading-tight">
-        {checkpoint.title}
-      </div>
-
-      <div className="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
-        {conditionTypes.map((t, i) => (
-          <span key={i} className="text-sm">{CONDITION_ICON[t] ?? <MdHelp />}</span>
-        ))}
-      </div>
-
-      {collected && collectedAt && (
-        <div className="text-xs theme-text mt-1">
-          {new Date(collectedAt).toLocaleDateString('ja-JP')}
+      {/* Collected badge */}
+      {collected && (
+        <div className="absolute top-0 right-0 bg-black/50 w-8 h-8 flex items-center justify-center rounded-bl-lg">
+          <div className="rounded-full">
+            <MdStarOutline size={20} className="text-white" />
+          </div>
         </div>
       )}
+
+      {/* Bottom info strip */}
+      <div className={`absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-black/50`}>
+        <div className={`text-sm font-semibold flex items-center leading-tight truncate text-white`}>
+          <div>{checkpoint.title}</div>
+          <div className={`flex items-center justify-end flex-1 gap-0.5 text-white/70`}>
+            {conditionTypes.map((t, i) => (
+              <span key={i}>{CONDITION_ICON[t] ?? <MdHelp />}</span>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
