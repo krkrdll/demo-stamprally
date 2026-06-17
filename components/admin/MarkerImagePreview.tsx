@@ -54,26 +54,16 @@ export default function MarkerImagePreview({ url, filename = 'marker-image' }: P
       </a>
 
       {/* Actions */}
-      <div className="flex flex-col gap-1">
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-blue-600 hover:underline leading-none"
+      {(isRelative || !imgError) && (
+        <button
+          type="button"
+          onClick={handleDownload}
+          disabled={downloading}
+          className="text-xs text-green-600 hover:underline leading-none text-left disabled:opacity-50"
         >
-          開く
-        </a>
-        {(isRelative || !imgError) && (
-          <button
-            type="button"
-            onClick={handleDownload}
-            disabled={downloading}
-            className="text-xs text-green-600 hover:underline leading-none text-left disabled:opacity-50"
-          >
-            {downloading ? '…' : 'DL'}
-          </button>
-        )}
-      </div>
+          {downloading ? '…' : 'DL'}
+        </button>
+      )}
     </div>
   );
 }
