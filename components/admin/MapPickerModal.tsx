@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
+const FALLBACK: [number, number] = [35.6762, 139.6503];
 
 const pickedIcon = L.divIcon({
   className: '',
@@ -29,11 +31,23 @@ type Props = {
 };
 
 export default function MapPickerModal({ initialLat, initialLng, onConfirm, onClose }: Props) {
-  const centerLat = initialLat ?? 35.6762;
-  const centerLng = initialLng ?? 139.6503;
-  const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(
-    initialLat != null && initialLng != null ? { lat: initialLat, lng: initialLng } : null
+  const hasInitial = initialLat != null && initialLng != null;
+  const [center, setCenter] = useState<[number, number] | null>(
+    hasInitial ? [initialLat!, initialLng!] : null,
   );
+  const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(
+    hasInitial ? { lat: initialLat!, lng: initialLng! } : null,
+  );
+
+  useEffect(() => {
+    if (hasInitial) return;
+    if (!navigator.geolocation) { setCenter(FALLBACK); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => setCenter([pos.coords.latitude, pos.coords.longitude]),
+      () => setCenter(FALLBACK),
+      { timeout: 6000 },
+    );
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
@@ -52,20 +66,30 @@ export default function MapPickerModal({ initialLat, initialLng, onConfirm, onCl
           </button>
         </div>
 
-        <div style={{ height: '380px', cursor: 'crosshair' }}>
-          <MapContainer
-            center={[centerLat, centerLng]}
-            zoom={15}
-            style={{ height: '100%', width: '100%' }}
-            scrollWheelZoom
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <ClickHandler onPick={(lat, lng) => setPicked({ lat, lng })} />
-            {picked && <Marker position={[picked.lat, picked.lng]} icon={pickedIcon} />}
-          </MapContainer>
+        <div style={{ height: '380px', cursor: center ? 'crosshair' : 'default' }}>
+          {center ? (
+            <MapContainer
+              center={center}
+              zoom={15}
+              style={{ height: '100%', width: '100%' }}
+              scrollWheelZoom
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <ClickHandler onPick={(lat, lng) => setPicked({ lat, lng })} />
+              {picked && <Marker position={[picked.lat, picked.lng]} icon={pickedIcon} />}
+            </MapContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full bg-gray-100 text-gray-400 text-sm gap-2">
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              現在位置を取得中…
+            </div>
+          )}
         </div>
 
         <div className="px-4 py-2 bg-gray-50 border-t border-gray-200 min-h-[36px] flex items-center">
