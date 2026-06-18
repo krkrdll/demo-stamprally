@@ -229,23 +229,26 @@ function CameraWidget({
 
   if (scanning) {
     return (
-      <div className="space-y-2">
-        <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
-          <canvas ref={canvasRef} className="hidden" />
-          <video ref={videoRef} muted playsInline className="w-full h-full object-cover" />
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="relative w-32 h-32">
-              <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 theme-border rounded-tl-sm" />
-              <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 theme-border rounded-tr-sm" />
-              <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 theme-border rounded-bl-sm" />
-              <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 theme-border rounded-br-sm" />
-            </div>
+      <div className="fixed inset-0 z-40 bg-black">
+        <canvas ref={canvasRef} className="hidden" />
+        <video ref={videoRef} muted playsInline className="w-full h-full object-cover" />
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="relative w-48 h-48">
+            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 theme-border rounded-tl-sm" />
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 theme-border rounded-tr-sm" />
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 theme-border rounded-bl-sm" />
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 theme-border rounded-br-sm" />
           </div>
         </div>
-        <p className="text-xs text-center text-gray-500">QRコードをスキャン中...</p>
-        <button onClick={stopCamera} className="w-full text-xs text-gray-400 underline underline-offset-2">
-          キャンセル
-        </button>
+        <div className="absolute bottom-16 inset-x-0 flex flex-col items-center gap-4">
+          <p className="text-sm text-white/80">QRコードをスキャン中...</p>
+          <button
+            onClick={stopCamera}
+            className="px-6 py-2 rounded-full bg-white/20 text-white text-sm backdrop-blur-sm"
+          >
+            キャンセル
+          </button>
+        </div>
       </div>
     );
   }
@@ -307,7 +310,7 @@ export default function MultiConditionCheckinClient({ checkpoint }: Props) {
         </div>
       )}
 
-      <header className="theme-bg text-white px-4 py-4 flex items-center gap-3 shadow">
+      <header className="relative z-50 theme-bg text-white px-4 py-4 flex items-center gap-3 shadow">
         <button
           onClick={() => router.back()}
           className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
