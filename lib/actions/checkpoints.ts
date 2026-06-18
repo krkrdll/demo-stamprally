@@ -2,10 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { promises as fs } from 'fs';
-import path from 'path';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/session';
+import { saveImage, deleteImage } from '@/lib/imageStorage';
 
 async function requireAdmin() {
   const ok = await getSession();
@@ -30,26 +29,6 @@ function parseConditions(formData: FormData): ConditionInput[] {
   }
 }
 
-const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/checkpoints');
-const ALLOWED_EXTS = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif']);
-
-async function saveImage(file: File, checkpointId: string): Promise<string> {
-  await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  const ext = (file.name.split('.').pop() ?? 'jpg').toLowerCase();
-  const safeExt = ALLOWED_EXTS.has(ext) ? ext : 'jpg';
-  const filename = `${checkpointId}.${safeExt}`;
-  const bytes = await file.arrayBuffer();
-  await fs.writeFile(path.join(UPLOAD_DIR, filename), Buffer.from(bytes));
-  return `/uploads/checkpoints/${filename}`;
-}
-
-async function deleteImage(imageUrl: string) {
-  try {
-    await fs.unlink(path.join(process.cwd(), 'public', imageUrl));
-  } catch {
-    // Ignore if file doesn't exist
-  }
-}
 
 export async function createCheckpoint(formData: FormData) {
   await requireAdmin();

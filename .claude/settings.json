@@ -9,7 +9,12 @@
       "Bash(ls *)",
       "Bash(cd *)",
       "Bash(node *)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(xargs cat)",
+      "Bash(mkdir -p /workspace/app/api/storage/\\\\[...path\\\\])"
+    ],
+    "additionalDirectories": [
+      "/workspace/app/api/storage"
     ]
   }
 }
