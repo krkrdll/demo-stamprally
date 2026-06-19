@@ -40,7 +40,7 @@ export default function StampRallyHome({ checkpoints, siteTitle }: Props) {
 
   return (
     <div className="min-h-screen theme-bg-light">
-      <header className="theme-bg text-white px-4 py-2 text-center shadow-md">
+      <header className="sticky top-0 z-30 theme-bg text-white px-4 py-2 text-center shadow-md">
         <h1 className="text-2xl font-bold tracking-wide">{siteTitle}</h1>
         <p className="theme-text-muted text-sm mt-1">
           {ready
