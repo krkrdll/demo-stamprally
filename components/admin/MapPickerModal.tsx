@@ -51,7 +51,7 @@ export default function MapPickerModal({ initialLat, initialLng, onConfirm, onCl
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+      <div className="bg-white rounded-2xl w-full max-w-[800px] overflow-hidden shadow-2xl">
         <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-gray-800">地図で位置を選択</h3>
@@ -66,7 +66,7 @@ export default function MapPickerModal({ initialLat, initialLng, onConfirm, onCl
           </button>
         </div>
 
-        <div style={{ height: '380px', cursor: center ? 'crosshair' : 'default' }}>
+        <div style={{ height: '520px', cursor: center ? 'crosshair' : 'default' }}>
           {center ? (
             <MapContainer
               center={center}
