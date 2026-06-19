@@ -176,10 +176,11 @@ function CameraWidget({
     if (!scanning) return;
     stoppedRef.current = false;
     let active = true;
+    let stream: MediaStream | null = null;
 
     async function start() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         if (!active) { stream.getTracks().forEach(t => t.stop()); return; }
         const video = videoRef.current;
         if (!video) return;
@@ -203,7 +204,7 @@ function CameraWidget({
               if (code && code.data === checkpointId) {
                 stoppedRef.current = true;
                 cancelAnimationFrame(animRef.current);
-                stream.getTracks().forEach(t => t.stop());
+                stream!.getTracks().forEach(t => t.stop());
                 active = false;
                 setScanning(false);
                 onVerifyRef.current();
@@ -224,6 +225,7 @@ function CameraWidget({
     return () => {
       active = false;
       cancelAnimationFrame(animRef.current);
+      stream?.getTracks().forEach(t => t.stop());
     };
   }, [scanning, checkpointId]);
 
