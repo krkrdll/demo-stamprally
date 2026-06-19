@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useStamps } from '@/hooks/useStamps';
 import type { Checkpoint } from '@/lib/types';
 import StampCard from './StampCard';
-import { MdGpsFixed, MdQrCodeScanner, MdKey, MdHelp, MdCelebration } from 'react-icons/md';
+import { MdGpsFixed, MdQrCodeScanner, MdKey, MdHelp, MdCelebration, MdMap } from 'react-icons/md';
 
 type Props = {
   checkpoints: Checkpoint[];
@@ -49,7 +49,8 @@ export default function StampRallyHome({ checkpoints, siteTitle }: Props) {
         </p>
       </header>
 
-      <main className="p-4 max-w-lg mx-auto pb-8">
+      <main className="p-4 max-w-lg mx-auto pb-24">
+
         {allCollected && (
           <div className="theme-bg-mid text-white rounded-xl p-4 text-center mb-4 shadow-lg">
             <MdCelebration size={40} className="mx-auto mb-1" />
@@ -90,6 +91,20 @@ export default function StampRallyHome({ checkpoints, siteTitle }: Props) {
           </div>
         )}
       </main>
+
+      {checkpoints.some(cp => cp.conditions.some(c => c.type === 'gps')) && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-black/20 backdrop-blur-md shadow-lg z-40">
+          <div className="max-w-lg mx-auto">
+            <button
+              onClick={() => router.push('/map')}
+              className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 font-medium py-2.5 rounded-xl shadow-sm hover:bg-gray-50 active:scale-95 transition-all text-sm"
+            >
+              <MdMap size={18} className="theme-text" />
+              マップで確認する
+            </button>
+          </div>
+        </div>
+      )}
 
       {selected && (
         <div
