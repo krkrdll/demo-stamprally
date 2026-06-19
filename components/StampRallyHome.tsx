@@ -40,7 +40,7 @@ export default function StampRallyHome({ checkpoints, siteTitle }: Props) {
 
   return (
     <div className="min-h-screen theme-bg-light">
-      <header className="theme-bg text-white px-4 py-5 text-center shadow-md">
+      <header className="theme-bg text-white px-4 py-2 text-center shadow-md">
         <h1 className="text-2xl font-bold tracking-wide">{siteTitle}</h1>
         <p className="theme-text-muted text-sm mt-1">
           {ready
@@ -124,7 +124,7 @@ export default function StampRallyHome({ checkpoints, siteTitle }: Props) {
               onClick={handleConfirm}
               className="w-full theme-bg active:scale-95 text-white font-bold py-3 rounded-xl transition-all mb-3"
             >
-              チェックインする
+              開く
             </button>
             <button
               onClick={() => setSelected(null)}
