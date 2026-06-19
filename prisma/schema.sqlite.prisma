@@ -25,6 +25,7 @@ model CheckpointCondition {
   type           String
   lat            Float?
   lng            Float?
+  radiusMeters   Float?     @default(20)
   markerImageUrl String?
   passcode       String?
   sortOrder      Int        @default(0)

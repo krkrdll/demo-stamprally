@@ -3,6 +3,7 @@ export type ConditionGps = {
   type: 'gps';
   lat: number;
   lng: number;
+  radiusMeters: number;
 };
 
 export type ConditionMarker = {

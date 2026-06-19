@@ -23,8 +23,6 @@ const MapView = dynamic(() => import('./MapView'), {
   ),
 });
 
-const RANGE_METERS = 20;
-
 type Props = { checkpoint: Checkpoint };
 
 // ---- GPS widget ----
@@ -45,7 +43,7 @@ function GpsWidget({
     usedLat !== null && usedLng !== null
       ? haversineDistance(usedLat, usedLng, condition.lat, condition.lng)
       : null;
-  const inRange = dist !== null && dist <= RANGE_METERS;
+  const inRange = dist !== null && dist <= condition.radiusMeters;
 
   return (
     <div className="space-y-2">
@@ -54,6 +52,7 @@ function GpsWidget({
         userLng={usedLng}
         cpLat={condition.lat}
         cpLng={condition.lng}
+        radiusMeters={condition.radiusMeters}
         inRange={inRange}
       />
       <div className="text-xs text-gray-500">
@@ -65,7 +64,7 @@ function GpsWidget({
           ? dist !== null
             ? inRange
               ? <span className="text-green-600 font-semibold flex items-center gap-1"><MdCheckCircle size={16} />範囲内！（{Math.round(dist)}m）</span>
-              : <span className="flex items-center gap-1"><MdStraighten size={16} />{Math.round(dist)}m 離れています（{RANGE_METERS}m 以内で達成）</span>
+              : <span className="flex items-center gap-1"><MdStraighten size={16} />{Math.round(dist)}m 離れています（{condition.radiusMeters}m 以内で達成）</span>
             : '距離計算中...'
           : '位置情報を取得中...'}
       </div>

@@ -9,7 +9,7 @@ import { MdGpsFixed, MdQrCodeScanner, MdKey, MdMap, MdAdd, MdDelete, MdImage, Md
 const MapPickerModal = dynamic(() => import('./MapPickerModal'), { ssr: false });
 
 type ConditionDraft =
-  | { type: 'gps'; lat: string; lng: string }
+  | { type: 'gps'; lat: string; lng: string; radiusMeters: number }
   | { type: 'marker'; markerImageUrl: string }
   | { type: 'passcode'; passcode: string };
 
@@ -26,11 +26,11 @@ type Props = {
 };
 
 function defaultDraft(): ConditionDraft {
-  return { type: 'gps', lat: '', lng: '' };
+  return { type: 'gps', lat: '', lng: '', radiusMeters: 20 };
 }
 
 function fromExisting(c: CheckpointCondition): ConditionDraft {
-  if (c.type === 'gps') return { type: 'gps', lat: c.lat.toString(), lng: c.lng.toString() };
+  if (c.type === 'gps') return { type: 'gps', lat: c.lat.toString(), lng: c.lng.toString(), radiusMeters: c.radiusMeters };
   if (c.type === 'passcode') return { type: 'passcode', passcode: c.passcode };
   return { type: 'marker', markerImageUrl: c.markerImageUrl };
 }
@@ -51,7 +51,7 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
   }
 
   function changeType(i: number, type: ConditionDraft['type']) {
-    if (type === 'gps') setConditions(prev => prev.map((c, idx) => idx === i ? { type: 'gps', lat: '', lng: '' } : c));
+    if (type === 'gps') setConditions(prev => prev.map((c, idx) => idx === i ? { type: 'gps', lat: '', lng: '', radiusMeters: 20 } : c));
     else if (type === 'passcode') setConditions(prev => prev.map((c, idx) => idx === i ? { type: 'passcode', passcode: '' } : c));
     else setConditions(prev => prev.map((c, idx) => idx === i ? { type: 'marker', markerImageUrl: '' } : c));
   }
@@ -89,7 +89,7 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
     const form = e.currentTarget;
     const fd = new FormData(form);
     const payload = conditions.map(c => {
-      if (c.type === 'gps') return { type: 'gps', lat: parseFloat(c.lat), lng: parseFloat(c.lng) };
+      if (c.type === 'gps') return { type: 'gps', lat: parseFloat(c.lat), lng: parseFloat(c.lng), radiusMeters: c.radiusMeters };
       if (c.type === 'passcode') return { type: 'passcode', passcode: c.passcode };
       return { type: 'marker', markerImageUrl: c.markerImageUrl };
     });
@@ -271,6 +271,20 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-xs font-mono"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      チェックイン半径 (m) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      required
+                      value={cond.radiusMeters}
+                      onChange={e => updateCondition(i, { radiusMeters: Number(e.target.value) } as Partial<ConditionDraft>)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-xs font-mono"
+                    />
                   </div>
                   <button
                     type="button"

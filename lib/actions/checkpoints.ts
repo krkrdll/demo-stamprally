@@ -15,6 +15,7 @@ type ConditionInput = {
   type: 'gps' | 'marker' | 'passcode';
   lat?: number;
   lng?: number;
+  radiusMeters?: number;
   markerImageUrl?: string;
   passcode?: string;
 };
@@ -61,6 +62,7 @@ export async function createCheckpoint(formData: FormData) {
           type: c.type,
           lat: c.type === 'gps' ? c.lat : null,
           lng: c.type === 'gps' ? c.lng : null,
+          radiusMeters: c.type === 'gps' ? (c.radiusMeters ?? 20) : null,
           passcode: c.type === 'passcode' ? c.passcode : null,
           markerImageUrl:
             c.type === 'marker'

@@ -5,8 +5,6 @@ import { MapContainer, TileLayer, Marker, Circle, Tooltip, useMap } from 'react-
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const RANGE_METERS = 20;
-
 // divIcon でデフォルトアイコンのパス問題を回避
 const userIcon = L.divIcon({
   className: '',
@@ -52,10 +50,11 @@ type Props = {
   userLng: number | null;
   cpLat: number;
   cpLng: number;
+  radiusMeters: number;
   inRange: boolean;
 };
 
-export default function MapView({ userLat, userLng, cpLat, cpLng, inRange }: Props) {
+export default function MapView({ userLat, userLng, cpLat, cpLng, radiusMeters, inRange }: Props) {
   return (
     <MapContainer
       center={[cpLat, cpLng]}
@@ -69,7 +68,7 @@ export default function MapView({ userLat, userLng, cpLat, cpLng, inRange }: Pro
       />
       <Circle
         center={[cpLat, cpLng]}
-        radius={RANGE_METERS}
+        radius={radiusMeters}
         pathOptions={{
           color: inRange ? '#22c55e' : '#f59e0b',
           fillColor: inRange ? '#22c55e' : '#f59e0b',
