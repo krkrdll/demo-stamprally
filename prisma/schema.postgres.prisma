@@ -37,3 +37,20 @@ model SiteSettings {
   theme     String   @default("amber")
   updatedAt DateTime @updatedAt
 }
+
+model UserSession {
+  id        String      @id
+  stamps    UserStamp[]
+  createdAt DateTime    @default(now())
+}
+
+model UserStamp {
+  id           String      @id
+  sessionId    String
+  session      UserSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  checkpointId String
+  title        String
+  collectedAt  DateTime    @default(now())
+
+  @@unique([sessionId, checkpointId])
+}
