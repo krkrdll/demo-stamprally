@@ -16,6 +16,7 @@ export type ConditionPasscode = {
   id: string;
   type: 'passcode';
   passcode: string;
+  hint?: string;
 };
 
 export type CheckpointCondition = ConditionGps | ConditionMarker | ConditionPasscode;

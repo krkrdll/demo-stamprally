@@ -9,6 +9,7 @@ type ConditionRow = {
   radiusMeters: number | null;
   markerImageUrl: string | null;
   passcode: string | null;
+  passcodeHint: string | null;
   sortOrder: number;
 };
 
@@ -25,7 +26,7 @@ function toCondition(row: ConditionRow): CheckpointCondition {
     return { id: row.id, type: 'gps', lat: row.lat!, lng: row.lng!, radiusMeters: row.radiusMeters ?? 20 };
   }
   if (row.type === 'passcode') {
-    return { id: row.id, type: 'passcode', passcode: row.passcode! };
+    return { id: row.id, type: 'passcode', passcode: row.passcode!, hint: row.passcodeHint ?? undefined };
   }
   return { id: row.id, type: 'marker', markerImageUrl: row.markerImageUrl! };
 }

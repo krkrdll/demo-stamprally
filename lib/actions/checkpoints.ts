@@ -18,6 +18,7 @@ type ConditionInput = {
   radiusMeters?: number;
   markerImageUrl?: string;
   passcode?: string;
+  passcodeHint?: string;
 };
 
 function parseConditions(formData: FormData): ConditionInput[] {
@@ -64,6 +65,7 @@ export async function createCheckpoint(formData: FormData) {
           lng: c.type === 'gps' ? c.lng : null,
           radiusMeters: c.type === 'gps' ? (c.radiusMeters ?? 20) : null,
           passcode: c.type === 'passcode' ? c.passcode : null,
+          passcodeHint: c.type === 'passcode' ? (c.passcodeHint?.trim() || null) : null,
           markerImageUrl:
             c.type === 'marker'
               ? (c.markerImageUrl?.trim() || `/api/qr/${id}`)
@@ -118,6 +120,7 @@ export async function updateCheckpoint(id: string, formData: FormData) {
             lng: c.type === 'gps' ? c.lng : null,
             radiusMeters: c.type === 'gps' ? (c.radiusMeters ?? 20) : null,
             passcode: c.type === 'passcode' ? c.passcode : null,
+            passcodeHint: c.type === 'passcode' ? (c.passcodeHint?.trim() || null) : null,
             markerImageUrl:
               c.type === 'marker'
                 ? (c.markerImageUrl?.trim() || `/api/qr/${id}`)

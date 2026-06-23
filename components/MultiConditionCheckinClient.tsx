@@ -99,9 +99,11 @@ function GpsWidget({
 // ---- Passcode widget ----
 function PasscodeWidget({
   conditionId,
+  hint,
   onVerify,
 }: {
   conditionId: string;
+  hint?: string;
   onVerify: () => void;
 }) {
   const [value, setValue] = useState('');
@@ -123,6 +125,11 @@ function PasscodeWidget({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
+      {hint && (
+        <p className="text-xs text-purple-700 bg-purple-50 border border-purple-200 rounded-lg px-3 py-2">
+          ヒント: {hint}
+        </p>
+      )}
       <input
         type="text"
         value={value}
@@ -389,7 +396,7 @@ export default function MultiConditionCheckinClient({ checkpoint }: Props) {
                     <GpsWidget condition={cond} onVerify={advanceStep} />
                   )}
                   {cond.type === 'passcode' && (
-                    <PasscodeWidget conditionId={cond.id} onVerify={advanceStep} />
+                    <PasscodeWidget conditionId={cond.id} hint={cond.hint} onVerify={advanceStep} />
                   )}
                   {cond.type === 'marker' && (
                     <CameraWidget checkpointId={checkpoint.id} onVerify={advanceStep} />

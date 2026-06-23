@@ -11,7 +11,7 @@ const MapPickerModal = dynamic(() => import('./MapPickerModal'), { ssr: false })
 type ConditionDraft =
   | { type: 'gps'; lat: string; lng: string; radiusMeters: number }
   | { type: 'marker'; markerImageUrl: string }
-  | { type: 'passcode'; passcode: string };
+  | { type: 'passcode'; passcode: string; passcodeHint: string };
 
 type Props = {
   action: (formData: FormData) => Promise<void>;
@@ -31,7 +31,7 @@ function defaultDraft(): ConditionDraft {
 
 function fromExisting(c: CheckpointCondition): ConditionDraft {
   if (c.type === 'gps') return { type: 'gps', lat: c.lat.toString(), lng: c.lng.toString(), radiusMeters: c.radiusMeters };
-  if (c.type === 'passcode') return { type: 'passcode', passcode: c.passcode };
+  if (c.type === 'passcode') return { type: 'passcode', passcode: c.passcode, passcodeHint: c.hint ?? '' };
   return { type: 'marker', markerImageUrl: c.markerImageUrl };
 }
 
@@ -52,7 +52,7 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
 
   function changeType(i: number, type: ConditionDraft['type']) {
     if (type === 'gps') setConditions(prev => prev.map((c, idx) => idx === i ? { type: 'gps', lat: '', lng: '', radiusMeters: 20 } : c));
-    else if (type === 'passcode') setConditions(prev => prev.map((c, idx) => idx === i ? { type: 'passcode', passcode: '' } : c));
+    else if (type === 'passcode') setConditions(prev => prev.map((c, idx) => idx === i ? { type: 'passcode', passcode: '', passcodeHint: '' } : c));
     else setConditions(prev => prev.map((c, idx) => idx === i ? { type: 'marker', markerImageUrl: '' } : c));
   }
 
@@ -90,7 +90,7 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
     const fd = new FormData(form);
     const payload = conditions.map(c => {
       if (c.type === 'gps') return { type: 'gps', lat: parseFloat(c.lat), lng: parseFloat(c.lng), radiusMeters: c.radiusMeters };
-      if (c.type === 'passcode') return { type: 'passcode', passcode: c.passcode };
+      if (c.type === 'passcode') return { type: 'passcode', passcode: c.passcode, passcodeHint: c.passcodeHint || undefined };
       return { type: 'marker', markerImageUrl: c.markerImageUrl };
     });
     fd.set('conditions', JSON.stringify(payload));
@@ -328,21 +328,38 @@ export default function CheckpointForm({ action, defaultValues, isEditing, check
 
               {/* Passcode fields */}
               {cond.type === 'passcode' && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    合言葉 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={cond.passcode}
-                    onChange={e => updateCondition(i, { passcode: e.target.value } as Partial<ConditionDraft>)}
-                    placeholder="例: さくら"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    参加者がこの合言葉を入力するとこの条件を達成できます
-                  </p>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      合言葉 <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={cond.passcode}
+                      onChange={e => updateCondition(i, { passcode: e.target.value } as Partial<ConditionDraft>)}
+                      placeholder="例: さくら"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      参加者がこの合言葉を入力するとこの条件を達成できます
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      ヒント
+                    </label>
+                    <input
+                      type="text"
+                      value={cond.passcodeHint}
+                      onChange={e => updateCondition(i, { passcodeHint: e.target.value } as Partial<ConditionDraft>)}
+                      placeholder="例: 会場入口の看板を探してみよう"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      空欄の場合、ヒントは表示されません
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

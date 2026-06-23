@@ -28,6 +28,7 @@ model CheckpointCondition {
   radiusMeters   Float?     @default(20)
   markerImageUrl String?
   passcode       String?
+  passcodeHint   String?
   sortOrder      Int        @default(0)
 }
 
