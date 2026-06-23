@@ -1,9 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* Brand theme — defaults to amber, overridden by root layout */
+  /* ── Sunset Walk paper-based palette (theme-independent identity) ── */
+  --paper:        #E5E2DB;   /* page background — recycled paper beige */
+  --surface:      #F6F4EF;   /* card / screen surface */
+  --surface-2:    #ffffff;   /* raised tiles */
+  --ink:          #14132A;   /* primary ink — deep navy */
+  --ink-soft:     #3F3D34;   /* body text */
+  --muted:        #6E6A5E;   /* secondary text */
+  --muted-2:      #A6A296;   /* faint labels */
+  --hairline:     rgba(20, 19, 42, 0.14);
+
+  /* Signature target-stamp colors (fixed multi-color motif) */
+  --stamp-pink:   #FF1F8A;
+  --stamp-orange: #FF8B3D;
+  --stamp-cyan:   #5DC2F0;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+
+  /* Brand theme — configurable accent, overridden by root layout */
   --color-brand:        #d97706;
   --color-brand-dark:   #b45309;
   --color-brand-mid:    #f59e0b;
@@ -15,24 +31,26 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-paper:      var(--paper);
+  --color-surface:    var(--surface);
+  --color-ink:        var(--ink);
+  --color-ink-soft:   var(--ink-soft);
+  --color-muted-ink:  var(--muted);
+  --color-faint-ink:  var(--muted-2);
+  --font-sans:    var(--font-noto-sans-jp), "Noto Sans JP", sans-serif;
+  --font-display: var(--font-archivo-black), "Archivo Black", sans-serif;
+  --font-label:   var(--font-barlow-condensed), "Barlow Condensed", sans-serif;
+  --font-mono:    var(--font-jetbrains-mono), "JetBrains Mono", monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-noto-sans-jp), "Noto Sans JP", sans-serif;
+  font-weight: 300;
 }
 
-/* Theme utility classes */
+/* ── Brand accent utility classes (theme-driven) ── */
 .theme-bg             { background-color: var(--color-brand); }
 .theme-bg:hover       { background-color: var(--color-brand-dark); }
 .theme-bg:active      { background-color: var(--color-brand-dark); }
@@ -43,12 +61,103 @@ body {
 .theme-text-muted     { color: var(--color-brand-muted); }
 .theme-border         { border-color: var(--color-brand-border); }
 
+/* Gradient "pill" CTA — blends the brand accent toward orange for the
+   sunset feel while still responding to the configured theme color. */
+.sunset-cta {
+  background: linear-gradient(95deg, var(--color-brand) 0%, var(--color-brand-mid) 100%);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-family: var(--font-archivo-black), "Archivo Black", sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--color-brand) 32%, transparent);
+}
+
+/* ── Typographic helpers ── */
+.font-display { font-family: var(--font-archivo-black), "Archivo Black", sans-serif; }
+.font-label   { font-family: var(--font-barlow-condensed), "Barlow Condensed", sans-serif; }
+.font-mono    { font-family: var(--font-jetbrains-mono), "JetBrains Mono", monospace; }
+
+.overline {
+  font-family: var(--font-barlow-condensed), "Barlow Condensed", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+/* ── Signature concentric "target" stamp ── */
+.target-stamp {
+  border-radius: 50%;
+  transform: rotate(-6deg);
+  box-shadow: 0 2px 6px rgba(20, 19, 42, 0.16);
+  background: radial-gradient(
+    circle,
+    var(--stamp-pink) 0 15%,
+    #fff 15% 23%,
+    var(--stamp-orange) 23% 39%,
+    #fff 39% 47%,
+    var(--stamp-cyan) 47% 65%,
+    #fff 65% 73%,
+    var(--ink) 73% 100%
+  );
+}
+
+.target-ring {
+  background: radial-gradient(
+    circle,
+    transparent 0 30%,
+    rgba(255, 255, 255, 0.28) 30% 33%,
+    transparent 33% 50%,
+    rgba(255, 255, 255, 0.22) 50% 53%,
+    transparent 53% 70%,
+    rgba(255, 255, 255, 0.16) 70% 73%,
+    transparent 73%
+  );
+}
+
+/* Sunset gradient field (hero / acquisition backdrops) */
+.sunset-field {
+  background: linear-gradient(150deg, var(--stamp-pink) 0%, var(--stamp-orange) 52%, var(--stamp-cyan) 100%);
+}
+
+/* Paper grain overlay */
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* ── Animations ── */
 @keyframes scanLine {
   0%, 100% { top: 0; }
   50% { top: calc(100% - 2px); }
 }
-
 .scan-line {
   position: absolute;
   animation: scanLine 2s ease-in-out infinite;
 }
+
+@keyframes stampDrop {
+  0%   { transform: scale(1.7) rotate(-16deg); opacity: 0; }
+  55%  { opacity: 1; }
+  72%  { transform: scale(0.93) rotate(-3deg); }
+  100% { transform: scale(1) rotate(-6deg); opacity: 1; }
+}
+.animate-stamp-drop { animation: stampDrop 0.5s ease-out both; }
+
+@keyframes ringPulse {
+  0%   { transform: scale(0.55); opacity: 0.55; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+.animate-float { animation: floatY 4s ease-in-out infinite; }

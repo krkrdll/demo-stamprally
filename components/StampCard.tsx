@@ -1,10 +1,11 @@
 import type { Checkpoint } from '@/lib/types';
-import { MdGpsFixed, MdQrCodeScanner, MdKey, MdHelp, MdAdjust, MdStarOutline } from 'react-icons/md';
+import { MdGpsFixed, MdQrCodeScanner, MdKey, MdHelp } from 'react-icons/md';
 
 type Props = {
   checkpoint: Checkpoint;
   collected: boolean;
   collectedAt?: string;
+  index?: number;
 };
 
 const CONDITION_ICON: Record<string, React.ReactNode> = {
@@ -13,47 +14,45 @@ const CONDITION_ICON: Record<string, React.ReactNode> = {
   passcode: <MdKey />,
 };
 
-export default function StampCard({ checkpoint, collected }: Props) {
+export default function StampCard({ checkpoint, collected, index }: Props) {
   const conditionTypes = checkpoint.conditions.map(c => c.type);
+  const num = index != null ? String(index + 1).padStart(2, '0') : '';
 
   return (
     <div
-      className={`rounded-xl border-2 overflow-hidden aspect-square relative transition-all ${
-        collected ? 'theme-border shadow-md' : 'border-gray-200'
+      className={`relative flex aspect-square flex-col items-center justify-center gap-2 rounded-md border bg-[var(--surface-2)] p-3 text-center transition-all ${
+        collected
+          ? 'border-[var(--hairline)] shadow-[0_1px_2px_rgba(20,19,42,0.05)]'
+          : 'border-dashed border-[var(--hairline)]'
       }`}
     >
-      {/* Background */}
-      {checkpoint.imageUrl ? (
-        <img
-          src={checkpoint.imageUrl}
-          alt={checkpoint.title}
-          className={`absolute inset-0 w-full h-full object-cover ${!collected ? 'opacity-30 grayscale' : ''}`}
-        />
+      {/* Stamp slot */}
+      {collected ? (
+        <div className="target-stamp h-[58%] w-[58%] max-h-20 max-w-20" />
       ) : (
-        <div className={`absolute inset-0 flex items-center justify-center ${collected ? 'theme-bg-light' : 'bg-gray-500'}`}>
-          {collected && <MdAdjust size={40} className="theme-text opacity-70" />}
+        <div className="flex h-[58%] w-[58%] max-h-20 max-w-20 items-center justify-center rounded-full border-2 border-dashed border-[rgba(20,19,42,0.24)]">
+          <span className="font-display text-2xl text-[rgba(20,19,42,0.24)]">
+            {num}
+          </span>
         </div>
       )}
 
-      {/* Collected badge */}
-      {collected && (
-        <div className="absolute top-0 right-0 bg-black/50 w-8 h-8 flex items-center justify-center rounded-bl-lg">
-          <div className="rounded-full">
-            <MdStarOutline size={20} className="text-white" />
-          </div>
-        </div>
-      )}
-
-      {/* Bottom info strip */}
-      <div className={`absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-black/50`}>
-        <div className={`text-sm font-semibold flex items-center leading-tight truncate text-white`}>
-          <div>{checkpoint.title}</div>
-          <div className={`flex items-center justify-end flex-1 gap-0.5 text-white/70`}>
-            {conditionTypes.map((t, i) => (
-              <span key={i}>{CONDITION_ICON[t] ?? <MdHelp />}</span>
-            ))}
-          </div>
-        </div>
+      {/* Spot name */}
+      <div className="flex w-full items-center justify-center gap-1">
+        <span
+          className={`truncate text-[11px] font-medium leading-tight ${
+            collected ? 'text-[var(--ink-soft)]' : 'text-[var(--muted)]'
+          }`}
+        >
+          {checkpoint.title}
+        </span>
+        <span className="flex shrink-0 items-center gap-0.5 text-[var(--muted-2)]">
+          {conditionTypes.map((t, i) => (
+            <span key={i} className="text-[11px]">
+              {CONDITION_ICON[t] ?? <MdHelp />}
+            </span>
+          ))}
+        </span>
       </div>
     </div>
   );
