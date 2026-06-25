@@ -61,9 +61,10 @@ type Props = {
   pins: GpsPin[];
   userLat: number | null;
   userLng: number | null;
+  onPinClick: (pin: GpsPin) => void;
 };
 
-export default function CheckpointsMapLeaflet({ pins, userLat, userLng }: Props) {
+export default function CheckpointsMapLeaflet({ pins, userLat, userLng, onPinClick }: Props) {
   const center: [number, number] =
     pins.length > 0 ? [pins[0].lat, pins[0].lng] : [35.6812, 139.7671];
 
@@ -83,6 +84,7 @@ export default function CheckpointsMapLeaflet({ pins, userLat, userLng }: Props)
           key={pin.id}
           position={[pin.lat, pin.lng]}
           icon={pin.collected ? collectedIcon : uncollectedIcon}
+          eventHandlers={{ click: () => onPinClick(pin) }}
         >
           <Tooltip direction="top" offset={[0, -14]} permanent={false} opacity={0.95}>
             {pin.title}
